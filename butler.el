@@ -35,3 +35,11 @@
 
 (defvar jenkins-servers nil)
 (require 'json)
+(defun get-server (name)
+  (car (delq nil (mapcar #'(lambda (obj)
+			     (if (string= name (car (cdr obj)))
+				 obj
+			       nil))
+			 jenkins-servers))))
+
+(defvar jenkins-results nil)
