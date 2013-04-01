@@ -43,3 +43,26 @@
 			 jenkins-servers))))
 
 (defvar jenkins-results nil)
+
+(defun get-jobs (server)
+  (interactive)
+  (let* ((url-request-method "GET")
+	 (args (cdr (cdr server)))
+	 (username (cdr (assoc 'jenkins-user args)))
+	 (password (cdr (assoc 'jenkins-password args)))
+	 (url (cdr (assoc 'jenkins-address args)))
+	 (buffer (generate-new-buffer "jenkins"))
+	 (url-request-extra-headers
+	  `(("Authorization" . ,(concat "Basic "
+					(base64-encode-string 
+					 (concat username ":" password)))))))
+    (url-retrieve (concat url "/api/json?pretty=true") #'parse-jobs)))
+
+(defun parse-jobs (status)
+  (goto-char (point-min))
+  (search-forward "{")
+  (backward-char)
+  (kill-region (point) (point-max))
+  
+  status)
+
