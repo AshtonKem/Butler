@@ -32,3 +32,5 @@
 
 
 ;;; Code:
+
+(defvar jenkins-servers nil)
