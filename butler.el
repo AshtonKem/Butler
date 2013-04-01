@@ -34,3 +34,4 @@
 ;;; Code:
 
 (defvar jenkins-servers nil)
+(require 'json)
