@@ -33,14 +33,14 @@
 
 ;;; Code:
 
-(defvar jenkins-servers nil)
+(defvar butler-servers nil)
 (require 'json)
 (defun get-server (name)
   (car (delq nil (mapcar #'(lambda (obj)
 			     (if (string= name (car (cdr obj)))
 				 obj
 			       nil))
-			 jenkins-servers))))
+			 butler-servers))))
 
 (defun parse-jobs (status)
   (goto-char (point-min))
@@ -82,14 +82,12 @@
   (interactive)
   (let* ((url-request-method "GET")
 	 (args (cdr (cdr server)))
-	 (username (cdr (assoc 'jenkins-user args)))
-	 (password (cdr (assoc 'jenkins-password args)))
-	 (url (cdr (assoc 'jenkins-address args)))
-	 (buffer (generate-new-buffer "jenkins"))
+	 (username (cdr (assoc 'server-user args)))
+	 (password (cdr (assoc 'server-password args)))
+	 (url (cdr (assoc 'server-address args)))
 	 (url-request-extra-headers
 	  `(("Authorization" . ,(concat "Basic "
 					(base64-encode-string
 					 (concat username ":" password)))))))
     (url-retrieve (concat url "/api/json?pretty=true") #'update-butler-status)
-    (switch-to-buffer (get-buffer-create "*butler-status*"))
-    ))
+    (switch-to-buffer (get-buffer-create "*butler-status*"))))
