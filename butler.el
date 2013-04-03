@@ -42,7 +42,40 @@
 			       nil))
 			 jenkins-servers))))
 
-(defvar jenkins-results nil)
+(defun parse-jobs (status)
+  (goto-char (point-min))
+  (search-forward "{")
+  (backward-char)
+  (let* ((raw (buffer-substring (point) (point-max)))
+	 (parsed (json-read-from-string raw))
+	 (jobs (cdr (assoc 'jobs parsed))))
+    jobs))
+
+
+(defun update-butler-status (status)
+  (let ((jobs (parse-jobs status))
+	(buffer (get-buffer-create "*butler-status*")))
+    (with-current-buffer buffer
+      (erase-buffer)
+      (mapcar (lambda (job)
+		(let ((name (cdr (assoc 'name job)))
+		      (color (cdr (assoc 'color job))))
+		  (cond
+		   ((string= color  "red")
+		    (insert (propertize "  " 'face `(:foreground ,color))))
+		   ((string= color "yellow")
+		    (insert (propertize "  " 'face `(:foreground ,color))))
+		   ((string= color  "blue")
+		    (insert (propertize "  " 'face `(:foreground ,color))))
+		   ((string= color  "grey")
+		    (insert (propertize "  " 'face `(:foreground ,color))))
+		   ((string= color "disabled")
+		    (insert (propertize "  " 'face `(:foreground "black"))))
+		   (t (insert (concat "Unknown: " color))))
+		  (insert name)
+		  (insert "\n")))
+	      jobs))))
+
 
 (defun get-jobs (server)
   (interactive)
