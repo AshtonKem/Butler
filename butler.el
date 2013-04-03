@@ -34,7 +34,8 @@
 ;;; Code:
 
 (defvar butler-servers nil)
-(defvar butler-buffer (get-buffer-create "*butler-status*"))
+(defun butler-buffer ()
+  (get-buffer-create "*butler-status*"))
 (define-derived-mode butler-mode fundamental-mode "Butler"
   "A major mode for interacting with various CI servers")
 (require 'json)
@@ -64,9 +65,10 @@
 
 (defun update-butler-status (status)
   (let ((jobs (parse-jobs status)))
-    (with-current-buffer butler-buffer
+    (with-current-buffer (butler-buffer)
       (mapcar (lambda (job)
 		(let ((name (cdr (assoc 'name job)))
+		      (inhibit-read-only t)
 		      (color (cdr (assoc 'color job))))
 		  (insert "    ")
 		  (cond
@@ -103,10 +105,14 @@
 
 (defun butler-status ()
   (interactive)
-  (with-current-buffer butler-buffer
-    (erase-buffer)
-    (dolist (server butler-servers (switch-to-buffer buffer))
+  (with-current-buffer (butler-buffer)
+    (let ((inhibit-read-only t))
+      (erase-buffer))
+    (dolist (server butler-servers)
       (let ((name (car (cdr server)))
+	    (inhibit-read-only t)
 	    (address (cdr (assoc 'server-address (cdr (cdr server))))))
 	(insert (concat name " (" address "):\n"))
-	(get-jobs server)))))
+	(get-jobs server)))
+    (switch-to-buffer (butler-buffer))
+    (setq buffer-read-only t)))
