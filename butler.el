@@ -82,7 +82,7 @@
 		   ((string= color "disabled")
 		    (insert (propertize "● " 'face `(:foreground "black"))))
 		   ((string= (subseq color -6) "_anime")
-		    (insert (propertize "● " 'face `(:foreground ,(subseq 0 -6)))))
+		    (insert (propertize "● " 'face `(:foreground ,(subseq color 0 -6)))))
 		   (t (insert (concat "Unknown: " color))))
 		  (insert name)
 		  (insert "\n")))
