@@ -89,13 +89,6 @@
 	  `(("Authorization" . ,(concat "Basic "
 					(base64-encode-string
 					 (concat username ":" password)))))))
-    (url-retrieve (concat url "/api/json?pretty=true") #'parse-jobs)))
-
-(defun parse-jobs (status)
-  (goto-char (point-min))
-  (search-forward "{")
-  (backward-char)
-  (kill-region (point) (point-max))
-  
-  status)
-
+    (url-retrieve (concat url "/api/json?pretty=true") #'update-butler-status)
+    (switch-to-buffer (get-buffer-create "*butler-status*"))
+    ))
