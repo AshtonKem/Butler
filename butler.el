@@ -34,6 +34,9 @@
 ;;; Code:
 
 (defvar butler-servers nil)
+(defvar butler-buffer (get-buffer-create "*butler-status*"))
+(define-derived-mode butler-mode fundamental-mode "Butler"
+  "A major mode for interacting with various CI servers")
 (require 'json)
 (defun get-server (name)
   (car (delq nil (mapcar #'(lambda (obj)
@@ -41,6 +44,13 @@
 				 obj
 			       nil))
 			 butler-servers))))
+
+
+(defvar butler-mode-map
+  (let ((map (make-keymap)))
+    (define-key map (kbd "g") 'magit-status)
+    map))
+
 
 (defun parse-jobs (status)
   (goto-char (point-min))
