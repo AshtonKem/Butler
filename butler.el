@@ -63,9 +63,8 @@
 
 
 (defun update-butler-status (status)
-  (let ((jobs (parse-jobs status))
-	(buffer (get-buffer-create "*butler-status*")))
-    (with-current-buffer buffer
+  (let ((jobs (parse-jobs status)))
+    (with-current-buffer butler-buffer
       (mapcar (lambda (job)
 		(let ((name (cdr (assoc 'name job)))
 		      (color (cdr (assoc 'color job))))
@@ -104,11 +103,10 @@
 
 (defun butler-status ()
   (interactive)
-  (let ((buffer (get-buffer-create "*butler-status*")))
-    (with-current-buffer buffer
-      (erase-buffer)
-      (dolist (server butler-servers (switch-to-buffer buffer))
-	(let ((name (car (cdr server)))
-	      (address (cdr (assoc 'server-address (cdr (cdr server))))))
-	  (insert (concat name " (" address "):\n"))
-	  (get-jobs server))))))
+  (with-current-buffer butler-buffer
+    (erase-buffer)
+    (dolist (server butler-servers (switch-to-buffer buffer))
+      (let ((name (car (cdr server)))
+	    (address (cdr (assoc 'server-address (cdr (cdr server))))))
+	(insert (concat name " (" address "):\n"))
+	(get-jobs server)))))
