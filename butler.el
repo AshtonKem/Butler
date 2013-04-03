@@ -60,6 +60,7 @@
       (mapcar (lambda (job)
 		(let ((name (cdr (assoc 'name job)))
 		      (color (cdr (assoc 'color job))))
+		  (insert "    ")
 		  (cond
 		   ((string= color  "red")
 		    (insert (propertize "● " 'face `(:foreground ,color))))
