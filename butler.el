@@ -87,7 +87,7 @@
 	 (buffer (generate-new-buffer "jenkins"))
 	 (url-request-extra-headers
 	  `(("Authorization" . ,(concat "Basic "
-					(base64-encode-string 
+					(base64-encode-string
 					 (concat username ":" password)))))))
     (url-retrieve (concat url "/api/json?pretty=true") #'parse-jobs)))
 
