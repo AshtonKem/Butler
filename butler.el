@@ -56,7 +56,6 @@
   (let ((jobs (parse-jobs status))
 	(buffer (get-buffer-create "*butler-status*")))
     (with-current-buffer buffer
-      (erase-buffer)
       (mapcar (lambda (job)
 		(let ((name (cdr (assoc 'name job)))
 		      (color (cdr (assoc 'color job))))
@@ -81,7 +80,6 @@
 
 
 (defun get-jobs (server)
-  (interactive)
   (let* ((url-request-method "GET")
 	 (args (cdr (cdr server)))
 	 (username (cdr (assoc 'server-user args)))
@@ -91,5 +89,16 @@
 	  `(("Authorization" . ,(concat "Basic "
 					(base64-encode-string
 					 (concat username ":" password)))))))
-    (url-retrieve (concat url "/api/json?pretty=true") #'update-butler-status)
-    (switch-to-buffer (get-buffer-create "*butler-status*"))))
+    (url-retrieve (concat url "/api/json?pretty=true") #'update-butler-status)))
+
+
+(defun butler-status ()
+  (interactive)
+  (let ((buffer (get-buffer-create "*butler-status*")))
+    (with-current-buffer buffer
+      (erase-buffer)
+      (dolist (server butler-servers (switch-to-buffer buffer))
+	(let ((name (car (cdr server)))
+	      (address (cdr (assoc 'server-address (cdr (cdr server))))))
+	  (insert (concat name " (" address "):\n"))
+	  (get-jobs server))))))
