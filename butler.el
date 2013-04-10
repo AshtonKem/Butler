@@ -107,8 +107,7 @@
 
 (defun draw-butler (buffer callback)
   (with-current-buffer buffer
-    (let ((inhibit-read-only t))
-      (erase-buffer))
+    (let ((inhibit-read-only t)))
     (dolist (server butler-servers)
       (let ((name (car (cdr server)))
 	    (inhibit-read-only t)
