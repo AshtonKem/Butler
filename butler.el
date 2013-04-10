@@ -53,7 +53,7 @@
     map))
 
 
-(defun parse-jobs (status)
+(defun parse-jobs ()
   (goto-char (point-min))
   (search-forward "{")
   (backward-char)
@@ -63,9 +63,9 @@
     jobs))
 
 
-(defun update-butler-status (status)
-  (let ((jobs (parse-jobs status)))
-    (with-current-buffer (butler-buffer)
+(defun update-butler-status (unused target-buffer)
+  (let ((jobs (parse-jobs)))
+    (with-current-buffer target-buffer
       (mapcar (lambda (job)
 		(let ((name (cdr (assoc 'name job)))
 		      (inhibit-read-only t)
@@ -90,7 +90,7 @@
 	      jobs))))
 
 
-(defun get-jobs (server)
+(defun get-jobs (server buffer)
   (let* ((url-request-method "GET")
 	 (args (cdr (cdr server)))
 	 (username (cdr (assoc 'server-user args)))
@@ -100,7 +100,7 @@
 	  `(("Authorization" . ,(concat "Basic "
 					(base64-encode-string
 					 (concat username ":" password)))))))
-    (url-retrieve (concat url "/api/json?pretty=true") #'update-butler-status)))
+    (url-retrieve (concat url "/api/json?pretty=true") #'update-butler-status (list buffer))))
 
 (defun draw-butler (buffer)
   (with-current-buffer buffer
@@ -111,7 +111,7 @@
 	    (inhibit-read-only t)
 	    (address (cdr (assoc 'server-address (cdr (cdr server))))))
 	(insert (concat name " (" address "):\n"))
-	(get-jobs server)))
+	(get-jobs server buffer)))
     (switch-to-buffer buffer)
     (setq buffer-read-only t)))
 
