@@ -112,7 +112,7 @@
 	    (address (cdr (assoc 'server-address (cdr (cdr server))))))
 	(insert (concat name " (" address "):\n"))
 	(get-jobs server)))
-    (switch-to-buffer (butler-buffer))
+    (switch-to-buffer buffer)
     (setq buffer-read-only t)))
 
 
