@@ -103,7 +103,7 @@
 	  `(("Authorization" . ,(concat "Basic "
 					(base64-encode-string
 					 (concat username ":" password)))))))
-    (url-retrieve (concat url "/api/json?pretty=true")
+    (url-retrieve (concat url "/api/json?tree=jobs[name,color]")
                   #'update-butler-status
                   (list buffer callback))))
 
