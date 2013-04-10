@@ -63,7 +63,7 @@
     jobs))
 
 
-(defun update-butler-status (unused target-buffer)
+(defun update-butler-status (unused target-buffer callback)
   (let ((jobs (parse-jobs)))
     (with-current-buffer target-buffer
       (mapcar (lambda (job)
@@ -87,10 +87,11 @@
 		   (t (insert (concat "Unknown: " color))))
 		  (insert name)
 		  (insert "\n")))
-	      jobs))))
+	      jobs)
+      (funcall callback))))
 
 
-(defun get-jobs (server buffer)
+(defun get-jobs (server buffer callback)
   (let* ((url-request-method "GET")
 	 (args (cdr (cdr server)))
 	 (username (cdr (assoc 'server-user args)))
@@ -100,9 +101,11 @@
 	  `(("Authorization" . ,(concat "Basic "
 					(base64-encode-string
 					 (concat username ":" password)))))))
-    (url-retrieve (concat url "/api/json?pretty=true") #'update-butler-status (list buffer))))
+    (url-retrieve (concat url "/api/json?pretty=true")
+                  #'update-butler-status
+                  (list buffer callback))))
 
-(defun draw-butler (buffer)
+(defun draw-butler (buffer callback)
   (with-current-buffer buffer
     (let ((inhibit-read-only t))
       (erase-buffer))
@@ -110,12 +113,18 @@
       (let ((name (car (cdr server)))
 	    (inhibit-read-only t)
 	    (address (cdr (assoc 'server-address (cdr (cdr server))))))
+        (goto-char (point-max))
 	(insert (concat name " (" address "):\n"))
-	(get-jobs server buffer)))))
+	(get-jobs server buffer callback)))))
 
 
 (defun butler-status ()
   (interactive)
-  (draw-butler (butler-buffer))
-  (switch-to-buffer (butler-buffer))
-  (setq buffer-read-only t))
+  (lexical-let ((target-point nil))
+    (with-current-buffer (butler-buffer)
+      (setq target-point (or (point) 0)))
+    (draw-butler (butler-buffer) (lambda ()
+                                   (switch-to-buffer (butler-buffer))
+                                   (goto-char target-point)))
+    (switch-to-buffer (butler-buffer))
+    (setq buffer-read-only t)))
