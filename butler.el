@@ -102,10 +102,8 @@
 					 (concat username ":" password)))))))
     (url-retrieve (concat url "/api/json?pretty=true") #'update-butler-status)))
 
-
-(defun butler-status ()
-  (interactive)
-  (with-current-buffer (butler-buffer)
+(defun draw-butler (buffer)
+  (with-current-buffer buffer
     (let ((inhibit-read-only t))
       (erase-buffer))
     (dolist (server butler-servers)
@@ -116,3 +114,8 @@
 	(get-jobs server)))
     (switch-to-buffer (butler-buffer))
     (setq buffer-read-only t)))
+
+
+(defun butler-status ()
+  (interactive)
+  (draw-butler (butler-buffer)))
