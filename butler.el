@@ -114,7 +114,10 @@
 	    (address (cdr (assoc 'server-address (cdr (cdr server))))))
         (goto-char (point-max))
 	(insert (concat name " (" address "):\n"))
-	(get-jobs server buffer callback)))))
+	(get-jobs server buffer
+                  (if (equal server (car (last butler-servers)))
+                      callback
+                    (lambda ())))))))
 
 
 (defun butler-status ()
