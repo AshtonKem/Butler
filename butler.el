@@ -111,11 +111,11 @@
 	    (inhibit-read-only t)
 	    (address (cdr (assoc 'server-address (cdr (cdr server))))))
 	(insert (concat name " (" address "):\n"))
-	(get-jobs server buffer)))
-    (switch-to-buffer buffer)
-    (setq buffer-read-only t)))
+	(get-jobs server buffer)))))
 
 
 (defun butler-status ()
   (interactive)
-  (draw-butler (butler-buffer)))
+  (draw-butler (butler-buffer))
+  (switch-to-buffer (butler-buffer))
+  (setq buffer-read-only t))
