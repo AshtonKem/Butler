@@ -37,8 +37,17 @@
 (defvar butler-servers nil)
 (defun butler-buffer ()
   (get-buffer-create "*butler-status*"))
+
+(defvar butler-mode-map
+  (let ((map (make-keymap)))
+    (define-key map (kbd "g") 'magit-status)
+    map))
+
+
 (define-derived-mode butler-mode fundamental-mode "Butler"
-  "A major mode for interacting with various CI servers")
+  "A major mode for interacting with various CI servers"
+  (use-local-map butler-mode-map)
+  )
 (require 'json)
 (require 'web)
 (defun get-server (name)
