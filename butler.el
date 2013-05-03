@@ -40,7 +40,7 @@
 
 (defvar butler-mode-map
   (let ((map (make-keymap)))
-    (define-key map (kbd "g") 'magit-status)
+    (define-key map (kbd "g") 'butler-refresh)
     map))
 
 
