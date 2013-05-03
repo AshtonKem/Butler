@@ -55,18 +55,15 @@
     map))
 
 
-(defun parse-jobs ()
-  (goto-char (point-min))
-  (search-forward "{")
-  (backward-char)
-  (let* ((raw (buffer-substring (point) (point-max)))
-	 (parsed (json-read-from-string raw))
+(defun parse-jobs (data)
+  (print data)
+  (let* ((parsed (json-read-from-string data))
 	 (jobs (cdr (assoc 'jobs parsed))))
     jobs))
 
 
-(defun update-butler-status (unused target-buffer callback)
-  (let ((jobs (parse-jobs)))
+(defun update-butler-status (data target-buffer callback)
+  (let ((jobs (parse-jobs data)))
     (with-current-buffer target-buffer
       (mapcar (lambda (job)
 		(let ((name (cdr (assoc 'name job)))
