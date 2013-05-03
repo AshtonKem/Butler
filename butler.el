@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t -*-
 ;;; butler.el --- Client for Jenkins
 
 ;; Copyright © 2012-2013 Ashton Kemerling
