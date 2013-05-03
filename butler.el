@@ -124,15 +124,8 @@
 
 (defun butler-status ()
   (interactive)
-  (lexical-let ((target-point nil))
-    (with-current-buffer (butler-buffer)
-      (setq target-point (or (point) 0)))
-    (erase-buffer)
-    (draw-butler (butler-buffer) (lambda ()
-                                   (switch-to-buffer (butler-buffer))
-                                   (goto-char target-point)))
-    (switch-to-buffer (butler-buffer))
-    (setq buffer-read-only t)))
+  (butler-refresh)
+  (switch-to-buffer (butler-buffer)))
 
 (defun butler-refresh ()
   (interactive)
