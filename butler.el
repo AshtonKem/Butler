@@ -40,6 +40,7 @@
 (define-derived-mode butler-mode fundamental-mode "Butler"
   "A major mode for interacting with various CI servers")
 (require 'json)
+(require 'web)
 (defun get-server (name)
   (car (delq nil (mapcar #'(lambda (obj)
 			     (if (string= name (car (cdr obj)))
