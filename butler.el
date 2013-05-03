@@ -98,13 +98,14 @@
 	 (username (cdr (assoc 'server-user args)))
 	 (password (cdr (assoc 'server-password args)))
 	 (url (cdr (assoc 'server-address args)))
-	 (url-request-extra-headers
+	 (headers
 	  `(("Authorization" . ,(concat "Basic "
 					(base64-encode-string
 					 (concat username ":" password)))))))
-    (url-retrieve (concat url "/api/json?tree=jobs[name,color]")
-                  #'update-butler-status
-                  (list buffer callback))))
+    (web-http-get (lambda (httpc header data)
+                    (update-butler-status data buffer callback))
+                    :url (concat url "/api/json?tree=jobs[name,color]")
+                    :extra-headers headers)))
 
 (defun draw-butler (buffer callback)
   (with-current-buffer buffer
