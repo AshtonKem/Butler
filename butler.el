@@ -94,7 +94,7 @@
 
 
 (defun get-jobs (server buffer callback)
-  (let* ((url-request-method "GET")
+  (lexical-let* ((url-request-method "GET")
 	 (args (cdr (cdr server)))
 	 (username (cdr (assoc 'server-user args)))
 	 (password (cdr (assoc 'server-password args)))
