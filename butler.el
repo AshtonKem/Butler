@@ -105,6 +105,11 @@
 	      jobs)
       (funcall callback))))
 
+(defun auth-string (username password)
+  (concat "Basic "
+          (base64-encode-string
+           (concat username ":" password))))
+
 
 (defun get-jobs (server buffer callback)
   (lexical-let* ((url-request-method "GET")
@@ -113,9 +118,7 @@
 	 (password (cdr (assoc 'server-password args)))
 	 (url (cdr (assoc 'server-address args)))
 	 (headers
-	  `(("Authorization" . ,(concat "Basic "
-					(base64-encode-string
-					 (concat username ":" password)))))))
+	  `(("Authorization" . ,(auth-string username password)))))
     (web-http-get (lambda (httpc header data)
                     (update-butler-status data buffer callback))
                     :url (concat url "/api/json?tree=jobs[name,color]")
