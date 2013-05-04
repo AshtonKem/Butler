@@ -41,6 +41,7 @@
 (defvar butler-mode-map
   (let ((map (make-keymap)))
     (define-key map (kbd "g") 'butler-refresh)
+    (define-key map (kbd "t") 'trigger-butler-job)
     map))
 
 
