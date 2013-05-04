@@ -35,7 +35,12 @@
 
 ;;; Code:
 
+(require 'json)
+(require 'web)
+(require 'butler-auth)
+
 (defvar butler-servers nil)
+
 (defun butler-buffer ()
   (get-buffer-create "*butler-status*"))
 
@@ -50,20 +55,12 @@
   "A major mode for interacting with various CI servers"
   (use-local-map butler-mode-map))
 
-(require 'json)
-(require 'web)
 (defun get-server (name)
   (car (delq nil (mapcar #'(lambda (obj)
 			     (if (string= name (car (cdr obj)))
 				 obj
 			       nil))
 			 butler-servers))))
-
-
-(defvar butler-mode-map
-  (let ((map (make-keymap)))
-    (define-key map (kbd "g") 'magit-status)
-    map))
 
 
 (defun parse-jobs (data)
@@ -139,35 +136,6 @@
 	      jobs)
       (funcall callback))))
 
-(defun generate-basic-auth (username password)
-  (concat "Basic "
-            (base64-encode-string
-             (concat username ":" password))))
-
-(defun parse-authinfo-file (filename servername)
-  (if (file-exists-p filename)
-      (with-temp-buffer
-        (insert-file-contents filename)
-        (search-forward (concat "machine " servername))
-        (let* ((line-start (line-beginning-position))
-               (line-end (line-end-position))
-               (line (buffer-substring line-start line-end))
-               (splitted (split-string line " "))
-               (filtered (delq "" splitted))
-               (username (car (cdr (member "login" filtered))))
-               (password (car (cdr (member "password" filtered)))))
-          (if (and username password)
-              (generate-basic-auth username password))))))
-
-(defun auth-string (server)
-  (let* ((args (cdr (cdr server)))
-         (name (car (cdr server)))
-         (username (cdr (assoc 'server-user args)))
-         (password (cdr (assoc 'server-password args)))
-         (auth-file (cdr (assoc 'auth-file args))))
-    (if auth-file
-        (parse-authinfo-file auth-file name)
-      (generate-basic-auth username password))))
 
 
 (defun get-jobs (server buffer callback)
