@@ -70,6 +70,38 @@
 	 (jobs (cdr (assoc 'jobs parsed))))
     jobs))
 
+(defun find-trigger-url (line)
+  (let ((start (search "url: " line)))
+    (if start
+        (substring line (+ start 5)))))
+
+(defun find-trigger-auth ()
+  (with-current-buffer (butler-buffer)
+    (save-excursion
+      (condition-case nil
+          (let* ((pos (search-backward "auth: "))
+                 (line-start (line-beginning-position))
+                 (line-end (line-end-position))
+                 (line (buffer-substring line-start line-end))
+                 (auth-start (search "auth: " line))
+                 (auth-string (substring line (+ auth-start 6))))
+            auth-string)
+          (search-failed nil)))))
+
+(defun trigger-butler-job ()
+  (interactive)
+  (with-current-buffer (butler-buffer)
+    (let* ((line-start (line-beginning-position))
+           (line-end (line-end-position))
+           (line (buffer-substring line-start line-end))
+           (url (find-trigger-url line))
+           (auth (find-trigger-auth)))
+      (print url)
+      (if (and url auth)
+          (web-http-get (lambda (conn headers data))
+                        :url url
+                        :extra-headers `(("Authorization" . ,auth)))))))
+
 
 (defun update-butler-status (data target-buffer callback)
   (let ((jobs (parse-jobs data)))
