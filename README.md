@@ -39,3 +39,21 @@ Coming Soon
 * Console output.
 * Job history.
 * Job watching.
+
+
+FAQ
+===
+
+1. Why?
+    * Because I missed Jenkins integration when I left Eclipse for Emacs (again).
+2. Why does it display an error at the bottom when I refresh?
+    * web.el is being tricky. I might replace it with the native url.el package.
+3. What if I want to use a Jenkins view instead of seeing everything?
+    * Server-address can be either the base url for your server, or the url for the view.
+4. Can I have multiple servers?
+    * There's a bug affecting the rendering of multiple servers at the moment. I'm working on it.
+5. Does it support Hudson/Travis/my-favorite-CI?
+    * I've only tested with Jenkins at the moment. Since Jenkins and Hudson are so closely related, theoretically it should be fine. Please contact me if Hudson doesn't work.
+    * I currently do not support other server types, sorry.
+6. Do you support anything other than basic auth?
+    * No.
