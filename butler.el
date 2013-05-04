@@ -5,7 +5,7 @@
 ;;
 ;; Author: Ashton Kemerling <ashtonkemerling@gmail.com>
 ;; URL: http://www.github.comc/AshtonKem/Butler.git
-;; Version: 0.1.0
+;; Version: 0.1.1
 ;; Keywords: Jenkins, Hudson, CI
 ;; Package-Requires: ((web "0.3.7"))
 
