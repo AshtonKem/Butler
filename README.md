@@ -27,6 +27,24 @@ Butler contains a list of servers conveniently named butler-servers. Add servers
                        (server-password . "pass")))
 ```
 
+Butler also supports putting credentials in an encrypted authinfo file, like gnus.
+
+Use the following code to set that up:
+
+```elisp
+(add-to-list butler-servers
+             '(jenkins "SERVER-NAME"
+                       (server-address . "https://jenkins-addres")
+                       (auth-file . "~/.authinfo.gpg")))
+```
+
+The following line should exist in ~/.authinfo.gpg:
+
+```
+machine SERVER-NAME login username password password
+```
+
+
 In the future, the first variable will indicate what type of CI server is being used. Currently it's ignored.
 
 View the list of servers with `M-x butler-status`. Refresh the list with `g`, and trigger the job under the point with `t`.
@@ -34,7 +52,6 @@ View the list of servers with `M-x butler-status`. Refresh the list with `g`, an
 Coming Soon
 ===========
 
-* EPA support.
 * Indication of what jobs are running
 * Console output.
 * Job history.
