@@ -46,8 +46,8 @@
 
 (define-derived-mode butler-mode fundamental-mode "Butler"
   "A major mode for interacting with various CI servers"
-  (use-local-map butler-mode-map)
-  )
+  (use-local-map butler-mode-map))
+
 (require 'json)
 (require 'web)
 (defun get-server (name)
