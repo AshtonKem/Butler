@@ -10,9 +10,9 @@ Dependencies
 ------------
 
 * json.el
-** Should be distributed with Emacs.
+    * Should be distributed with Emacs.
 * web.el
-** Available in Marmalade.
+    * Available in Marmalade.
 
 Getting Started
 ===============
