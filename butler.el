@@ -133,9 +133,14 @@
     (dolist (server butler-servers)
       (let ((name (car (cdr server)))
 	    (inhibit-read-only t)
-	    (address (cdr (assoc 'server-address (cdr (cdr server))))))
+	    (address (cdr (assoc 'server-address (cdr (cdr server)))))
+            (auth (auth-string server)))
         (goto-char (point-max))
-	(insert (concat name " (" address "):\n"))
+	(insert (concat name " (" address "): "))
+        (insert (propertize (concat "auth: "
+                                    auth)
+                            'invisible t))
+        (insert "\n")
 	(get-jobs server buffer
                   (if (equal server (car (last butler-servers)))
                       callback
