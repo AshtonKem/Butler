@@ -77,7 +77,10 @@
       (mapcar (lambda (job)
 		(let ((name (cdr (assoc 'name job)))
 		      (inhibit-read-only t)
-		      (color (cdr (assoc 'color job))))
+		      (color (cdr (assoc 'color job)))
+                      (url (concat "url: "
+                                   (cdr (assoc 'url job))
+                                   "build/")))
 		  (insert "    ")
 		  (cond
 		   ((string= color  "red")
@@ -96,6 +99,8 @@
 		    (insert (propertize "● " 'face `(:foreground ,(subseq color 0 -6)))))
 		   (t (insert (concat "Unknown: " "'" color "' "))))
 		  (insert name)
+                  (insert " ")
+                  (insert (propertize url 'invisible t))
 		  (insert "\n")))
 	      jobs)
       (funcall callback))))
