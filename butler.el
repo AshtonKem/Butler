@@ -203,3 +203,6 @@
                                    (kill-buffer target-buffer)
                                    (setq buffer-read-only t)
                                    (butler-mode))))))
+
+
+(provide 'butler)
