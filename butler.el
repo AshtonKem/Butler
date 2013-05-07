@@ -227,7 +227,8 @@
 (defun butler-status ()
   (interactive)
   (butler-refresh)
-  (switch-to-buffer (butler-buffer)))
+  (switch-to-buffer (butler-buffer))
+  (butler-mode))
 
 (defun butler-refresh ()
   (interactive)
@@ -243,8 +244,7 @@
                                      (insert results)
                                      (goto-char target-point))
                                    (kill-buffer target-buffer)
-                                   (setq buffer-read-only t)
-                                   (butler-mode))))))
+                                   (setq buffer-read-only t))))))
 
 
 (provide 'butler)
