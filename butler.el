@@ -60,11 +60,6 @@
 			 butler-servers))))
 
 
-(defvar butler-mode-map
-  (let ((map (make-keymap)))
-    (define-key map (kbd "g") 'magit-status)
-    map))
-
 
 (defun parse-jobs (data)
   (print data)
