@@ -21,7 +21,7 @@ Dependencies
 Getting Started
 ===============
 
-Butler contains a list of servers conveniently named butler-servers. Add servers in the following manor:
+Butler contains a list of servers conveniently named butler-servers. Add servers in the following manner:
 
 ```elisp
 (add-to-list butler-servers
