@@ -5,7 +5,7 @@
 ;;
 ;; Author: Ashton Kemerling <ashtonkemerling@gmail.com>
 ;; URL: http://www.github.comc/AshtonKem/Butler.git
-;; Version: 0.1.1
+;; Version: 0.1.2
 ;; Keywords: Jenkins, Hudson, CI
 ;; Package-Requires: ((web "0.3.7"))
 
@@ -27,10 +27,6 @@
 ;;; Commentary:
 
 ;; Provides an interface to connect to the Jenkins CI server
-
-;;; Installation
-
-;; Will eventually be available in elpa or marmalade
 
 
 ;;; Code:
