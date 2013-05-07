@@ -177,37 +177,37 @@
       (generate-basic-auth username password))))
 
 
-(defun get-jobs (server buffer callback)
+(defun get-jobs (server)
   (lexical-let* ((url-request-method "GET")
-	 (args (cdr (cdr server)))
-	 (url (cdr (assoc 'server-address args)))
-	 (headers
-	  `(("Authorization" . ,(auth-string server)))))
+                 (args (cdr (cdr server)))
+                 (url (cdr (assoc 'server-address args)))
+                 (headers
+                  `(("Authorization" . ,(auth-string server)))))
     (web-http-get (lambda (httpc header data)
-                    (update-butler-status data buffer callback))
+;                    (update-butler-status data buffer callback)
+                    )
                     :url (concat url "/api/json?tree=jobs[name,color,url]")
                     :extra-headers headers)))
 
 
 
-(defun draw-butler (buffer callback)
-  (with-current-buffer buffer
-    (let ((inhibit-read-only t)))
+(defun draw-butler ()
+  (let ((target-list nil))
     (dolist (server butler-servers)
-      (let ((name (car (cdr server)))
-	    (inhibit-read-only t)
-	    (address (cdr (assoc 'server-address (cdr (cdr server)))))
-            (auth (auth-string server)))
-        (goto-char (point-max))
-	(insert (concat name " (" address "): "))
-        (insert (propertize (concat "auth: "
-                                    auth)
-                            'invisible t))
-        (insert "\n")
-	(get-jobs server buffer
-                  (if (equal server (car (last butler-servers)))
-                      callback
-                    (lambda ())))))))
+      (let* ((name (car (cdr server)))
+             (address (cdr (assoc 'server-address (cdr (cdr server)))))
+             (auth (auth-string server))
+             (full-name (concat
+                         name " "
+                         (propertize (concat "auth: "
+                                             auth)
+                                     'invisible t))))
+        (push (list nil (vector full-name "" "" ""))
+              target-list)
+         (get-jobs server)))
+    (princ target-list)
+    (setq tabulated-list-entries target-list)
+    (tabulated-list-print t)))
 
 
 (defun butler-status ()
@@ -217,21 +217,7 @@
 
 (defun butler-refresh ()
   (interactive)
-  (lexical-let ((target-point nil)
-                (target-buffer (generate-new-buffer "temp")))
-    (with-current-buffer (butler-buffer)
-      (setq target-point (or (point) 0)))
-    (draw-butler target-buffer (lambda ()
-                                 (let ((results (buffer-string))
-                                       (inhibit-read-only t))
-                                   (with-current-buffer (butler-buffer)
-                                     (erase-buffer)
-                                     (insert results)
-                                     (goto-char target-point))
-                                   (switch-to-buffer (butler-buffer))
-                                   (kill-buffer target-buffer)
-                                   (setq buffer-read-only t)
-                                   (butler-mode))))))
+  (draw-butler))
 
 
 (provide 'butler)
