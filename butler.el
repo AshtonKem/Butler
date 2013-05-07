@@ -31,6 +31,7 @@
 
 ;;; Code:
 
+
 (defvar butler-servers nil)
 (defun butler-buffer ()
   (get-buffer-create "*butler-status*"))
@@ -238,9 +239,9 @@
                                    (with-current-buffer (butler-buffer)
                                      (erase-buffer)
                                      (insert results)
-                                     (goto-char target-point))
-                                   (kill-buffer target-buffer)
-                                   (setq buffer-read-only t))))))
+                                     (goto-char target-point)
+                                     (setq buffer-read-only t))
+                                   (kill-buffer target-buffer))))))
 
 
 (provide 'butler)
