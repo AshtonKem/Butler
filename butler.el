@@ -45,10 +45,17 @@
     (define-key map (kbd "t") 'trigger-butler-job)
     map))
 
+(defvar butler-list-format [("Server" 5 nil)
+                            ("Status" 4 nil)
+                            ("Progress" 15 nil)
+                            ("Name" 20 nil)])
 
-(define-derived-mode butler-mode fundamental-mode "Butler"
+(define-derived-mode butler-mode tabulated-list-mode "Butler"
   "A major mode for interacting with various CI servers"
-  (use-local-map butler-mode-map))
+  (use-local-map butler-mode-map)
+  (setq tabulated-list-format butler-list-format
+        tabulated-list-padding 2)
+  (tabulated-list-init-header))
 
 (require 'json)
 (require 'web)
