@@ -45,7 +45,7 @@
     (define-key map (kbd "t") 'trigger-butler-job)
     map))
 
-(defvar butler-list-format [("Server" 5 nil)
+(defvar butler-list-format [("Server" 10 nil)
                             ("Status" 4 nil)
                             ("Progress" 15 nil)
                             ("Name" 20 nil)])
@@ -112,39 +112,38 @@
                         :extra-headers `(("Authorization" . ,auth)))))))
 
 
-(defun update-butler-status (data target-buffer callback)
+(defun update-butler-status (data)
   (let ((jobs (parse-jobs data)))
-    (with-current-buffer target-buffer
-      (mapcar (lambda (job)
-		(let ((name (cdr (assoc 'name job)))
-		      (inhibit-read-only t)
-		      (color (cdr (assoc 'color job)))
-                      (url (concat "url: "
-                                   (cdr (assoc 'url job))
-                                   "build/")))
-		  (insert "    ")
-		  (cond
-		   ((string= color  "red")
-		    (insert (propertize "● " 'face `(:foreground ,color))))
-		   ((string= color "yellow")
-		    (insert (propertize "● " 'face `(:foreground ,color))))
-		   ((string= color  "blue")
-		    (insert (propertize "● " 'face `(:foreground ,color))))
-		   ((string= color  "grey")
-		    (insert (propertize "● " 'face `(:foreground ,color))))
-                   ((string= color  "aborted")
-		    (insert (propertize "● " 'face `(:foreground "grey"))))
-		   ((string= color "disabled")
-		    (insert (propertize "● " 'face `(:foreground "black"))))
-		   ((string= (subseq color -6) "_anime")
-		    (insert (propertize "● " 'face `(:foreground ,(subseq color 0 -6)))))
-		   (t (insert (concat "Unknown: " "'" color "' "))))
-		  (insert name)
-                  (insert " ")
-                  (insert (propertize url 'invisible t))
-		  (insert "\n")))
-	      jobs)
-      (funcall callback))))
+    (mapcar (lambda (job)
+              (let ((name (cdr (assoc 'name job)))
+                    (color (cdr (assoc 'color job)))
+                    (url (concat "url: "
+                                 (cdr (assoc 'url job))
+                                 "build/")))
+                (push (list nil
+                            (vector ""
+                                    (cond
+                                     ((string= color  "red")
+                                      (propertize "● " 'face `(:foreground ,color)))
+                                     ((string= color "yellow")
+                                      (propertize "● " 'face `(:foreground ,color)))
+                                     ((string= color  "blue")
+                                      (propertize "● " 'face `(:foreground ,color)))
+                                     ((string= color  "grey")
+                                      (propertize "● " 'face `(:foreground ,color)))
+                                     ((string= color  "aborted")
+                                      (propertize "● " 'face `(:foreground "grey")))
+                                     ((string= color "disabled")
+                                      (propertize "● " 'face `(:foreground "black")))
+                                     ((string= (subseq color -6) "_anime")
+                                      (propertize "● " 'face `(:foreground ,(subseq color 0 -6))))
+                                     (t (concat "Unknown: " "'" color "' ")))
+                                    ""
+                                    (concat name
+                                           " "
+                                           (propertize url 'invisible t))))
+                      tabulated-list-entries)))
+            jobs)))
 
 (defun generate-basic-auth (username password)
   (concat "Basic "
@@ -184,30 +183,29 @@
                  (headers
                   `(("Authorization" . ,(auth-string server)))))
     (web-http-get (lambda (httpc header data)
-;                    (update-butler-status data buffer callback)
-                    )
+                    (update-butler-status data))
                     :url (concat url "/api/json?tree=jobs[name,color,url]")
                     :extra-headers headers)))
 
 
 
 (defun draw-butler ()
-  (let ((target-list nil))
-    (dolist (server butler-servers)
-      (let* ((name (car (cdr server)))
-             (address (cdr (assoc 'server-address (cdr (cdr server)))))
-             (auth (auth-string server))
-             (full-name (concat
-                         name " "
-                         (propertize (concat "auth: "
-                                             auth)
-                                     'invisible t))))
-        (push (list nil (vector full-name "" "" ""))
-              target-list)
-         (get-jobs server)))
-    (princ target-list)
-    (setq tabulated-list-entries target-list)
-    (tabulated-list-print t)))
+  (setq tabulated-list-entries nil)
+  (dolist (server butler-servers)
+    (let* ((name (car (cdr server)))
+           (address (cdr (assoc 'server-address (cdr (cdr server)))))
+           (auth (auth-string server))
+           (full-name (concat
+                       name " "
+                       (propertize (concat "auth: "
+                                           auth)
+                                   'invisible t))))
+      (push (list nil (vector full-name "" "" ""))
+            tabulated-list-entries)
+      (get-jobs server)))
+  (setq tabulated-list-entries
+        (nreverse tabulated-list-entries))
+  (tabulated-list-print t))
 
 
 (defun butler-status ()
