@@ -247,4 +247,4 @@
 (provide 'butler)
 
 
-;;; Butler ends here.
+;;; butler.el ends here
