@@ -242,7 +242,6 @@
                                      (erase-buffer)
                                      (insert results)
                                      (goto-char target-point))
-                                   (switch-to-buffer (butler-buffer))
                                    (kill-buffer target-buffer)
                                    (setq buffer-read-only t)
                                    (butler-mode))))))
