@@ -99,34 +99,58 @@
                         :url url
                         :extra-headers `(("Authorization" . ,auth)))))))
 
+(defun generate-progress-string (timestamp expected)
+  (let* ((current-time (string-to-number (format-time-string "%s")))
+         (milliseconds (* current-time 1000))
+         (duration (- milliseconds timestamp))
+         (percentage (min
+                      (/ (float duration)
+                         expected)
+                      1.0))
+         (rounded (floor (* 10 percentage))))
+    (concat " |"
+            (make-string rounded ?+)
+            (make-string (- 10 rounded) ?\ )
+            "| ")))
+
+
 
 (defun update-butler-status (data target-buffer callback)
   (let ((jobs (parse-jobs data)))
     (with-current-buffer target-buffer
       (mapcar (lambda (job)
-		(let ((name (cdr (assoc 'name job)))
-		      (inhibit-read-only t)
-		      (color (cdr (assoc 'color job)))
-                      (url (concat "url: "
-                                   (cdr (assoc 'url job))
-                                   "build/")))
+		(let* ((name (cdr (assoc 'name job)))
+                       (inhibit-read-only t)
+                       (color (cdr (assoc 'color job)))
+                       (last-build (cdr (assoc 'lastBuild job)))
+                       (timestamp (cdr (assoc 'timestamp last-build)))
+                       (expected-duration (cdr (assoc 'estimatedDuration last-build)))
+                       (url (concat "url: "
+                                    (cdr (assoc 'url job))
+                                    "build/"))
+                       (building (equal t
+                                        (cdr (assoc 'building last-build)))))
 		  (insert "    ")
 		  (cond
 		   ((string= color  "red")
-		    (insert (propertize "● " 'face `(:foreground ,color))))
+		    (insert (propertize "●" 'face `(:foreground ,color))))
 		   ((string= color "yellow")
-		    (insert (propertize "● " 'face `(:foreground ,color))))
+		    (insert (propertize "●" 'face `(:foreground ,color))))
 		   ((string= color  "blue")
-		    (insert (propertize "● " 'face `(:foreground ,color))))
+		    (insert (propertize "●" 'face `(:foreground ,color))))
 		   ((string= color  "grey")
-		    (insert (propertize "● " 'face `(:foreground ,color))))
+		    (insert (propertize "●" 'face `(:foreground ,color))))
                    ((string= color  "aborted")
-		    (insert (propertize "● " 'face `(:foreground "grey"))))
+		    (insert (propertize "●" 'face `(:foreground "grey"))))
 		   ((string= color "disabled")
-		    (insert (propertize "● " 'face `(:foreground "black"))))
+		    (insert (propertize "●" 'face `(:foreground "black"))))
 		   ((string= (subseq color -6) "_anime")
-		    (insert (propertize "● " 'face `(:foreground ,(subseq color 0 -6)))))
+		    (insert (propertize "●" 'face `(:foreground ,(subseq color 0 -6)))))
 		   (t (insert (concat "Unknown: " "'" color "' "))))
+                  (if building
+                      (insert (generate-progress-string timestamp expected-duration))
+
+                    (insert "              "))
 		  (insert name)
                   (insert " ")
                   (insert (propertize url 'invisible t))
@@ -173,8 +197,10 @@
 	  `(("Authorization" . ,(auth-string server)))))
     (web-http-get (lambda (httpc header data)
                     (update-butler-status data buffer callback))
-                    :url (concat url "/api/json?tree=jobs[name,color,url]")
-                    :extra-headers headers)))
+                  :url (concat
+                        url
+                        "/api/json?tree=jobs[name,color,url,lastBuild[building,duration,estimatedDuration,timestamp]]")
+                  :extra-headers headers)))
 
 
 
