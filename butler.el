@@ -191,9 +191,9 @@
 
 (defun get-jobs (server buffer callback)
   (lexical-let* ((url-request-method "GET")
-	 (args (cdr (cdr server)))
-	 (url (cdr (assoc 'server-address args)))
-	 (headers
+                 (args (cdr (cdr server)))
+                 (url (cdr (assoc 'server-address args)))
+                 (headers
 	  `(("Authorization" . ,(auth-string server)))))
     (web-http-get (lambda (httpc header data)
                     (update-butler-status data buffer callback))
