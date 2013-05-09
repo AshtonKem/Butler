@@ -196,7 +196,7 @@
                     (update-butler-status data buffer callback))
                   :url (concat
                         url
-                        "/api/json?tree=jobs[name,color,url,lastBuild[building,duration,estimatedDuration,timestamp]]")
+                        "/api/json?tree=jobs[name,inQueue,color,url,lastBuild[building,duration,estimatedDuration,timestamp,executor[likelyStuck]]]")
                   :extra-headers headers)))
 
 
