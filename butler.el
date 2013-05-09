@@ -120,6 +120,8 @@
                        (inhibit-read-only t)
                        (color (cdr (assoc 'color job)))
                        (last-build (cdr (assoc 'lastBuild job)))
+                       (executor (cdr (assoc 'executor last-build)))
+                       (likely-stuck (equal t (cdr (assoc 'likelyStuck executor))))
                        (timestamp (cdr (assoc 'timestamp last-build)))
                        (expected-duration (cdr (assoc 'estimatedDuration last-build)))
                        (url (concat "url: "
@@ -145,7 +147,10 @@
 		    (insert (propertize "●" 'face `(:foreground ,(subseq color 0 -6)))))
 		   (t (insert (concat "Unknown: " "'" color "' "))))
                   (if building
-                      (insert (generate-progress-string timestamp expected-duration))
+                      (if likely-stuck
+                          (insert (propertize (generate-progress-string timestamp expected-duration)
+                                              'face '(:foreground "res")))
+                        (insert (generate-progress-string timestamp expected-duration) ))
 
                     (insert "              "))
 		  (insert name)
