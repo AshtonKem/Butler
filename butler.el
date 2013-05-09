@@ -187,10 +187,10 @@
 
 
 (defun get-jobs (server buffer callback)
-  (lexical-let* ((url-request-method "GET")
-                 (args (cdr (cdr server)))
-                 (url (cdr (assoc 'server-address args)))
-                 (headers
+  (let* ((url-request-method "GET")
+         (args (cdr (cdr server)))
+         (url (cdr (assoc 'server-address args)))
+         (headers
 	  `(("Authorization" . ,(auth-string server)))))
     (web-http-get (lambda (httpc header data)
                     (update-butler-status data buffer callback))
@@ -229,8 +229,8 @@
 
 (defun butler-refresh ()
   (interactive)
-  (lexical-let ((target-point nil)
-                (target-buffer (generate-new-buffer "temp")))
+  (let ((target-point nil)
+        (target-buffer (generate-new-buffer "temp")))
     (with-current-buffer (butler-buffer)
       (setq target-point (or (point) 0)))
     (draw-butler target-buffer (lambda ()
