@@ -115,7 +115,7 @@
 (defun update-butler-status (data target-buffer callback)
   (let ((jobs (parse-jobs data)))
     (with-current-buffer target-buffer
-      (mapcar (lambda (job)
+      (mapc (lambda (job)
 		(let* ((name (cdr (assoc 'name job)))
                        (inhibit-read-only t)
                        (color (cdr (assoc 'color job)))
