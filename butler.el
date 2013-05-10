@@ -120,6 +120,7 @@
                        (inhibit-read-only t)
                        (color (cdr (assoc 'color job)))
                        (last-build (cdr (assoc 'lastBuild job)))
+                       (in-queue (equal t (cdr (assoc 'inQueue job))))
                        (executor (cdr (assoc 'executor last-build)))
                        (likely-stuck (equal t (cdr (assoc 'likelyStuck executor))))
                        (timestamp (cdr (assoc 'timestamp last-build)))
@@ -151,8 +152,9 @@
                           (insert (propertize (generate-progress-string timestamp expected-duration)
                                               'face '(:foreground "res")))
                         (insert (generate-progress-string timestamp expected-duration) ))
-
-                    (insert "              "))
+                    (if in-queue
+                        (insert "    Waiting   ")
+                        (insert "              ")))
 		  (insert name)
                   (insert " ")
                   (insert (propertize url 'invisible t))
