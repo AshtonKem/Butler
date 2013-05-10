@@ -31,6 +31,8 @@
 
 ;;; Code:
 
+(require 'json)
+(require 'web)
 
 (defvar butler-servers nil)
 (defun butler-buffer ()
@@ -47,8 +49,6 @@
   "A major mode for interacting with various CI servers"
   (use-local-map butler-mode-map))
 
-(require 'json)
-(require 'web)
 (defun get-server (name)
   (car (delq nil (mapcar #'(lambda (obj)
 			     (if (string= name (car (cdr obj)))
