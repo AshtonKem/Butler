@@ -217,7 +217,7 @@
 	    (address (cdr (assoc 'server-address (cdr (cdr server)))))
             (auth (auth-string server)))
         (goto-char (point-max))
-	(insert (concat name " (" address "): "))
+	(insert (concat name " (" (org-link-unescape address) "): "))
         (insert (propertize (concat "auth: "
                                     auth)
                             'invisible t))
