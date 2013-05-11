@@ -57,12 +57,16 @@
 	 (jobs (cdr (assoc 'jobs parsed))))
     jobs))
 
-(defun find-trigger-url (line)
+(defun find-job-url (line)
   (let ((start (search "url: " line)))
     (if start
         (substring line (+ start 5)))))
 
-(defun find-trigger-auth ()
+(defun find-job-name (line)
+  (let ((url-start (search "url: " line)))
+    (subseq line 19 (- url-start 1))))
+
+(defun find-job-auth ()
   (with-current-buffer (butler-buffer)
     (save-excursion
       (condition-case nil
@@ -81,8 +85,8 @@
     (let* ((line-start (line-beginning-position))
            (line-end (line-end-position))
            (line (buffer-substring line-start line-end))
-           (url (find-trigger-url line))
-           (auth (find-trigger-auth)))
+           (url (find-job-url line))
+           (auth (find-job-auth)))
       (print url)
       (if (and url auth)
           (web-http-get (lambda (conn headers data))
