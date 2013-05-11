@@ -89,8 +89,8 @@
            (auth (find-job-auth)))
       (print url)
       (if (and url auth)
-          (web-http-get (lambda (conn headers data))
-                        :url url
+          (web-http-post (lambda (conn headers data))
+                        :url (concat url "build/")
                         :extra-headers `(("Authorization" . ,auth)))))))
 
 (defun generate-progress-string (timestamp expected)
@@ -123,8 +123,7 @@
                      (timestamp (cdr (assoc 'timestamp last-build)))
                      (expected-duration (cdr (assoc 'estimatedDuration last-build)))
                      (url (concat "url: "
-                                  (cdr (assoc 'url job))
-                                  "build/"))
+                                  (cdr (assoc 'url job))))
                      (building (equal t
                                       (cdr (assoc 'building last-build)))))
                 (insert "    ")
