@@ -33,8 +33,9 @@
 
 (require 'json)
 (require 'web)
+(require 'butler-servers)
 
-(defvar butler-servers nil)
+
 (defun butler-buffer ()
   (get-buffer-create "*butler-status*"))
 
@@ -48,14 +49,6 @@
 (define-derived-mode butler-mode fundamental-mode "Butler"
   "A major mode for interacting with various CI servers"
   (use-local-map butler-mode-map))
-
-(defun get-server (name)
-  (car (delq nil (mapcar #'(lambda (obj)
-			     (if (string= name (car (cdr obj)))
-				 obj
-			       nil))
-			 butler-servers))))
-
 
 
 (defun parse-jobs (data)
@@ -162,43 +155,19 @@
             jobs)
       (funcall callback))))
 
-(defun generate-basic-auth (username password)
-  (concat "Basic "
-          (base64-encode-string
-           (concat username ":" password))))
 
-(defun parse-authinfo-file (filename servername)
-  (if (file-exists-p filename)
-      (with-temp-buffer
-        (insert-file-contents filename)
-        (search-forward (concat "machine " servername))
-        (let* ((line-start (line-beginning-position))
-               (line-end (line-end-position))
-               (line (buffer-substring line-start line-end))
-               (splitted (split-string line " "))
-               (filtered (delq "" splitted))
-               (username (car (cdr (member "login" filtered))))
-               (password (car (cdr (member "password" filtered)))))
-          (if (and username password)
-              (generate-basic-auth username password))))))
 
-(defun auth-string (server)
-  (let* ((args (cdr (cdr server)))
-         (name (car (cdr server)))
-         (username (cdr (assoc 'server-user args)))
-         (password (cdr (assoc 'server-password args)))
-         (auth-file (cdr (assoc 'auth-file args))))
-    (if auth-file
-        (parse-authinfo-file auth-file name)
-      (generate-basic-auth username password))))
+
 
 
 (defun get-jobs (server buffer callback)
   (let* ((url-request-method "GET")
-         (args (cdr (cdr server)))
-         (url (cdr (assoc 'server-address args)))
+         (name (car (cdr server)))
+         (parsed (get-server name))
+         (url (cdr (assoc 'url parsed)))
+         (auth (cdr (assoc 'auth parsed)))
          (headers
-	  `(("Authorization" . ,(auth-string server)))))
+	  `(("Authorization" . ,auth))))
     (web-http-get (lambda (httpc header data)
                     (update-butler-status data buffer callback))
                   :url (concat
@@ -211,11 +180,12 @@
 (defun draw-butler (buffer callback)
   (with-current-buffer buffer
     (let ((inhibit-read-only t)))
-    (dolist (server butler-servers)
-      (let ((name (car (cdr server)))
-	    (inhibit-read-only t)
-	    (address (cdr (assoc 'server-address (cdr (cdr server)))))
-            (auth (auth-string server)))
+    (dolist (server butler-server-list)
+      (let* ((name (car (cdr server)))
+             (parsed-server (get-server (car (cdr server))))
+             (inhibit-read-only t)
+             (address (cdr (assoc 'url parsed-server)))
+             (auth (cdr (assoc 'auth parsed-server))))
         (goto-char (point-max))
 	(insert (concat name " (" (org-link-unescape address) "): "))
         (insert (propertize (concat "auth: "
@@ -223,7 +193,7 @@
                             'invisible t))
         (insert "\n")
 	(get-jobs server buffer
-                  (if (equal server (car (last butler-servers)))
+                  (if (equal server (car (last butler-server-list)))
                       callback
                     (lambda ())))))))
 
