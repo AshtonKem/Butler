@@ -93,6 +93,21 @@
                         :url (concat url "build/")
                         :extra-headers `(("Authorization" . ,auth)))))))
 
+(defun cancel-butler-job ()
+  (interactive)
+  (with-current-buffer (butler-buffer)
+    (let* ((line-start (line-beginning-position))
+           (line-end (line-end-position))
+           (line (buffer-substring line-start line-end))
+           (name (find-job-name line))
+           (url (find-job-url))
+           (auth (find-job-auth)))
+
+      (if (and url auth)
+          (web-http-post (lambda (conn headers data))
+                         :url (concat url "/lastBuild/stop")
+                         :extra-headers `(("Authorization" . ,auth)))))))
+
 (defun generate-progress-string (timestamp expected)
   (let* ((current-time (string-to-number (format-time-string "%s")))
          (milliseconds (* current-time 1000))
