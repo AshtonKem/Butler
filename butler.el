@@ -156,16 +156,12 @@
       (funcall callback))))
 
 
-
-
-
-
 (defun get-jobs (server buffer callback)
   (let* ((url-request-method "GET")
          (name (car (cdr server)))
          (parsed (get-server name))
-         (url (cdr (assoc 'url parsed)))
-         (auth (cdr (assoc 'auth parsed)))
+         (url (gethash 'url parsed))
+         (auth (gethash 'auth parsed))
          (headers
 	  `(("Authorization" . ,auth))))
     (web-http-get (lambda (httpc header data)
@@ -184,8 +180,8 @@
       (let* ((name (car (cdr server)))
              (parsed-server (get-server (car (cdr server))))
              (inhibit-read-only t)
-             (address (cdr (assoc 'url parsed-server)))
-             (auth (cdr (assoc 'auth parsed-server))))
+             (address (gethash 'url parsed-server))
+             (auth (gethash 'auth parsed-server)))
         (goto-char (point-max))
 	(insert (concat name " (" (org-link-unescape address) "): "))
         (insert (propertize (concat "auth: "

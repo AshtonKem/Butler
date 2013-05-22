@@ -65,12 +65,15 @@
              (auth-file (cdr (assoc 'auth-file args)))
              (auth-string (if auth-file
                               (parse-authinfo-file auth-file name)
-                            (generate-basic-auth username password))))
+                            (generate-basic-auth username password)))
+             (server-hash (make-hash-table :test #'equal)))
+        (puthash 'name name server-hash)
+        (puthash 'username username server-hash)
+        (puthash 'auth auth-string  server-hash)
+        (puthash 'url url server-hash)
+        (puthash 'jobs (make-hash-table :test #'equal) server-hash)
         (puthash name
-                 `((name . ,name)
-                   (url . ,url)
-                   (username . ,username)
-                   (auth . ,auth-string))
+                 server-hash
                  butler-hash)))))
 
 (defun get-server (name)
