@@ -50,6 +50,33 @@
   "A major mode for interacting with various CI servers"
   (use-local-map butler-mode-map))
 
+(defun refresh-butler-status ()
+  (prepare-servers)
+  (maphash (lambda (server-name server)
+                  (let* ((url-request-method "GET")
+                         (url (gethash 'url server))
+                         (auth (gethash 'auth server))
+                         (headers
+                          `(("Authorization" . ,auth))))
+                    (puthash 'jobs (make-hash-table :test #'equal) server)
+                    (web-http-get (lambda (httpc header data)
+                                    (let ((parsed (json-read-from-string data)))
+                                      (mapc (lambda (job)
+                                              (let ((hash (make-hash-table :test #'equal)))
+                                                (puthash 'color (cdr (assoc 'color job))
+                                                         hash)
+                                                (puthash 'name (cdr (assoc 'name job))
+                                                         hash)
+                                                (puthash (cdr (assoc 'name job))
+                                                         hash
+                                                         (gethash 'jobs server))))
+                                            (cdr (assoc 'jobs parsed)))))
+                                  :url (concat
+                                        url
+                                        "/api/json?tree=jobs[name,inQueue,color,url,lastBuild[building,duration,estimatedDuration,timestamp,executor[likelyStuck]]]")
+                                  :extra-headers headers)))
+           butler-hash))
+
 
 (defun parse-jobs (data)
   (print data)
@@ -204,6 +231,7 @@
   (interactive)
   (let ((target-point nil)
         (target-buffer (generate-new-buffer "temp")))
+    (refresh-butler-status)
     (with-current-buffer (butler-buffer)
       (setq target-point (or (point) 0)))
     (draw-butler target-buffer (lambda ()
