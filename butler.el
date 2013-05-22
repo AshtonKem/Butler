@@ -79,7 +79,6 @@
 
 
 (defun parse-jobs (data)
-  (print data)
   (let* ((parsed (json-read-from-string data))
 	 (jobs (cdr (assoc 'jobs parsed))))
     jobs))
@@ -110,7 +109,6 @@
            (line (buffer-substring line-start line-end))
            (url (find-trigger-url line))
            (auth (find-trigger-auth)))
-      (print url)
       (if (and url auth)
           (web-http-get (lambda (conn headers data))
                         :url url
