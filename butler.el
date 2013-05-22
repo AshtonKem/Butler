@@ -131,93 +131,80 @@
 
 
 
-(defun update-butler-status (data target-buffer callback)
-  (let ((jobs (parse-jobs data)))
-    (with-current-buffer target-buffer
-      (mapc (lambda (job)
-              (let* ((name (cdr (assoc 'name job)))
-                     (inhibit-read-only t)
-                     (color (cdr (assoc 'color job)))
-                     (last-build (cdr (assoc 'lastBuild job)))
-                     (in-queue (equal t (cdr (assoc 'inQueue job))))
-                     (executor (cdr (assoc 'executor last-build)))
-                     (likely-stuck (equal t (cdr (assoc 'likelyStuck executor))))
-                     (timestamp (cdr (assoc 'timestamp last-build)))
-                     (expected-duration (cdr (assoc 'estimatedDuration last-build)))
-                     (url (concat "url: "
-                                  (cdr (assoc 'url job))
-                                  "build/"))
-                     (building (equal t
-                                      (cdr (assoc 'building last-build)))))
-                (insert "    ")
-                (cond
-                 ((string= color  "red")
-                  (insert (propertize "●" 'face `(:foreground ,color))))
-                 ((string= color "yellow")
-                  (insert (propertize "●" 'face `(:foreground ,color))))
-                 ((string= color  "blue")
-                  (insert (propertize "●" 'face `(:foreground ,color))))
-                 ((string= color  "grey")
-                  (insert (propertize "●" 'face `(:foreground ,color))))
-                 ((string= color  "aborted")
-                  (insert (propertize "●" 'face `(:foreground "grey"))))
-                 ((string= color "disabled")
-                  (insert (propertize "●" 'face `(:foreground "black"))))
-                 ((string= (subseq color -6) "_anime")
-                  (insert (propertize "●" 'face `(:foreground ,(subseq color 0 -6)))))
-                 (t (insert (concat "Unknown: " "'" color "' "))))
-                (if building
-                    (if likely-stuck
-                        (insert (propertize (generate-progress-string timestamp expected-duration)
-                                            'face '(:foreground "res")))
-                      (insert (generate-progress-string timestamp expected-duration) ))
-                  (if in-queue
-                      (insert "    Waiting   ")
-                    (insert "              ")))
-                (insert name)
-                (insert " ")
-                (insert (propertize url 'invisible t))
-                (insert "\n")))
-            jobs)
-      (funcall callback))))
+(defun draw-jobs (jobs target-buffer callback)
+  (with-current-buffer target-buffer
+    (maphash (lambda (name job)
+            (let* ((inhibit-read-only t)
+                   (color (gethash 'color job))
+                   (building (gethash 'building job nil))
+                   (likely-stuck (gethash 'likely-stuck job nil))
+                   (in-queue (gethash 'in-queue job nil))
+                   (url (gethash 'url job))
+;                   (last-build (cdr (assoc 'lastBuild job)))
+;                   (in-queue (equal t (cdr (assoc 'inQueue job))))
+;                   (executor (cdr (assoc 'executor last-build)))
+;                   (likely-stuck (equal t (cdr (assoc 'likelyStuck executor))))
+;                   (timestamp (cdr (assoc 'timestamp last-build)))
+;                   (expected-duration (cdr (assoc 'estimatedDuration last-build)))
+                   )
+              (insert "    ")
+              (cond
+               ((string= color  "red")
+                (insert (propertize "●" 'face `(:foreground ,color))))
+               ((string= color "yellow")
+                (insert (propertize "●" 'face `(:foreground ,color))))
+               ((string= color  "blue")
+                (insert (propertize "●" 'face `(:foreground ,color))))
+               ((string= color  "grey")
+                (insert (propertize "●" 'face `(:foreground ,color))))
+               ((string= color  "aborted")
+                (insert (propertize "●" 'face `(:foreground "grey"))))
+               ((string= color "disabled")
+                (insert (propertize "●" 'face `(:foreground "black"))))
+               ((string= (subseq color -6) "_anime")
+                (insert (propertize "●" 'face `(:foreground ,(subseq color 0 -6)))))
+               (t (insert (concat "Unknown: " "'" color "' "))))
+              (if building
+                  (if likely-stuck
+                      (insert (propertize (generate-progress-string timestamp expected-duration)
+                                          'face '(:foreground "res")))
+                    (insert (generate-progress-string timestamp expected-duration) ))
+                (if in-queue
+                    (insert "    Waiting   ")
+                  (insert "              ")))
+              (insert name)
+              (insert "\n")))
+          jobs)
+    (funcall callback)))
 
 
-(defun get-jobs (server buffer callback)
-  (let* ((url-request-method "GET")
-         (name (car (cdr server)))
-         (parsed (get-server name))
-         (url (gethash 'url parsed))
-         (auth (gethash 'auth parsed))
-         (headers
-	  `(("Authorization" . ,auth))))
-    (web-http-get (lambda (httpc header data)
-                    (update-butler-status data buffer callback))
-                  :url (concat
-                        url
-                        "/api/json?tree=jobs[name,inQueue,color,url,lastBuild[building,duration,estimatedDuration,timestamp,executor[likelyStuck]]]")
-                  :extra-headers headers)))
+
 
 
 
 (defun draw-butler (buffer callback)
   (with-current-buffer buffer
-    (let ((inhibit-read-only t)))
-    (dolist (server butler-server-list)
-      (let* ((name (car (cdr server)))
-             (parsed-server (get-server (car (cdr server))))
-             (inhibit-read-only t)
-             (address (gethash 'url parsed-server))
-             (auth (gethash 'auth parsed-server)))
-        (goto-char (point-max))
-	(insert (concat name " (" (org-link-unescape address) "): "))
-        (insert (propertize (concat "auth: "
-                                    auth)
-                            'invisible t))
-        (insert "\n")
-	(get-jobs server buffer
-                  (if (equal server (car (last butler-server-list)))
-                      callback
-                    (lambda ())))))))
+    (let ((inhibit-read-only t)
+          (count 0)
+          (total-size (- (hash-table-count butler-hash) 1)))
+      (maphash (lambda (server-name server)
+                 (let* ((name (gethash 'name server))
+                        (inhibit-read-only t)
+                        (address (gethash 'url server))
+                        (auth (gethash 'auth server))
+                        (jobs (gethash 'jobs server)))
+                   (goto-char (point-max))
+                   (insert (concat name " (" (org-link-unescape address) "): "))
+                   (insert (propertize (concat "auth: "
+                                               auth)
+                                       'invisible t))
+                   (insert "\n")
+                   (draw-jobs jobs buffer
+                              (if (= count total-size)
+                                  callback
+                                (lambda ())))
+                   (incf count)))
+               butler-hash))))
 
 
 (defun butler-status ()
@@ -228,9 +215,9 @@
 
 (defun butler-refresh ()
   (interactive)
+  (refresh-butler-status)
   (let ((target-point nil)
         (target-buffer (generate-new-buffer "temp")))
-    (refresh-butler-status)
     (with-current-buffer (butler-buffer)
       (setq target-point (or (point) 0)))
     (draw-butler target-buffer (lambda ()
