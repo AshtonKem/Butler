@@ -58,7 +58,8 @@
                          (auth (gethash 'auth server))
                          (headers
                           `(("Authorization" . ,auth))))
-                    (puthash 'jobs (make-hash-table :test #'equal) server)
+                    (if (not (gethash 'jobs server))
+                        (puthash 'jobs (make-hash-table :test #'equal) server))
                     (web-http-get (lambda (httpc header data)
                                     (let ((parsed (json-read-from-string data)))
                                       (mapc (lambda (job)
