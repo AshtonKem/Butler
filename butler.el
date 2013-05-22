@@ -80,7 +80,7 @@
                                                          hash)
                                                 (puthash 'timestamp (cdr (assoc 'timestamp last-build))
                                                          hash)
-                                                (puthash 'expected-duration (cdr (assoc 'estimated-duration last-build))
+                                                (puthash 'expected-duration (cdr (assoc 'estimatedDuration last-build))
                                                          hash)
                                                 (puthash (cdr (assoc 'name job))
                                                          hash
