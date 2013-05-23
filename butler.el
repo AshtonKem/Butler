@@ -103,7 +103,7 @@
     jobs))
 
 
-(defun find-trigger-name ()
+(defun find-current-job ()
   (with-current-buffer (butler-buffer)
     (condition-case nil
         (let* ((line-start (line-beginning-position))
@@ -113,7 +113,7 @@
           (if (string-match "^    ●\\(    Waiting   \\|              \\| |\\(\\+\\| \\)\\{10\\}| \\)\\(.*\\)$" line)
               (match-string 3 line))))))
 
-(defun find-trigger-server (job-name)
+(defun find-current-server (job-name)
   (let ((matches nil)
         (distances nil))
     (maphash (lambda (name server)
@@ -163,8 +163,8 @@
 (defun trigger-butler-job ()
   (interactive)
   (with-current-buffer (butler-buffer)
-    (let* ((job-name (find-trigger-name))
-           (server-name (find-trigger-server job-name))
+    (let* ((job-name (find-current-job))
+           (server-name (find-current-server job-name))
            (server (get-server server-name))
            (job (get-job server job-name))
            (url (gethash 'url job))
