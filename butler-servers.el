@@ -80,6 +80,9 @@
   (prepare-servers)
   (gethash name butler-hash))
 
+(defun get-job (server name)
+  (gethash name (gethash 'jobs server)))
+
 
 (provide 'butler-servers)
 
