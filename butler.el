@@ -43,6 +43,7 @@
   (let ((map (make-keymap)))
     (define-key map (kbd "g") 'butler-refresh)
     (define-key map (kbd "t") 'trigger-butler-job)
+    (define-key map (kbd "h") 'hide-butler-job)
     map))
 
 
@@ -176,6 +177,17 @@
                         :url (concat url "build/")
                         :extra-headers `(("Authorization" . ,auth))))      )))
 
+(defun hide-butler-job ()
+  (interactive)
+  (with-current-buffer (butler-buffer)
+    (let* ((job-name (find-current-job))
+           (server-name (find-current-server job-name))
+           (server (get-server server-name))
+           (job (get-job server job-name)))
+      (if job
+          (progn (puthash 'hidden t job)
+                 (butler-refresh))))))
+
 (defun generate-progress-string (timestamp expected)
   (let* ((current-time (string-to-number (format-time-string "%s")))
          (milliseconds (* current-time 1000))
@@ -202,34 +214,36 @@
                    (in-queue (gethash 'in-queue job nil))
                    (url (gethash 'url job))
                    (timestamp (gethash 'timestamp job))
-                   (expected-duration (gethash 'expected-duration job)))
-              (insert "    ")
-              (cond
-               ((string= color  "red")
-                (insert (propertize "●" 'face `(:foreground ,color))))
-               ((string= color "yellow")
-                (insert (propertize "●" 'face `(:foreground ,color))))
-               ((string= color  "blue")
-                (insert (propertize "●" 'face `(:foreground ,color))))
-               ((string= color  "grey")
-                (insert (propertize "●" 'face `(:foreground ,color))))
-               ((string= color  "aborted")
-                (insert (propertize "●" 'face `(:foreground "grey"))))
-               ((string= color "disabled")
-                (insert (propertize "●" 'face `(:foreground "black"))))
-               ((string= (subseq color -6) "_anime")
-                (insert (propertize "●" 'face `(:foreground ,(subseq color 0 -6)))))
-               (t (insert (concat "Unknown: " "'" color "' "))))
-              (if building
-                  (if likely-stuck
-                      (insert (propertize (generate-progress-string timestamp expected-duration)
-                                          'face '(:foreground "res")))
-                    (insert (generate-progress-string timestamp expected-duration) ))
-                (if in-queue
-                    (insert "    Waiting   ")
-                  (insert "              ")))
-              (insert name)
-              (insert "\n")))
+                   (expected-duration (gethash 'expected-duration job))
+                   (hidden (gethash 'hidden job)))
+              (unless hidden
+                (insert "    ")
+                (cond
+                 ((string= color  "red")
+                  (insert (propertize "●" 'face `(:foreground ,color))))
+                 ((string= color "yellow")
+                  (insert (propertize "●" 'face `(:foreground ,color))))
+                 ((string= color  "blue")
+                  (insert (propertize "●" 'face `(:foreground ,color))))
+                 ((string= color  "grey")
+                  (insert (propertize "●" 'face `(:foreground ,color))))
+                 ((string= color  "aborted")
+                  (insert (propertize "●" 'face `(:foreground "grey"))))
+                 ((string= color "disabled")
+                  (insert (propertize "●" 'face `(:foreground "black"))))
+                 ((string= (subseq color -6) "_anime")
+                  (insert (propertize "●" 'face `(:foreground ,(subseq color 0 -6)))))
+                 (t (insert (concat "Unknown: " "'" color "' "))))
+                (if building
+                    (if likely-stuck
+                        (insert (propertize (generate-progress-string timestamp expected-duration)
+                                            'face '(:foreground "res")))
+                      (insert (generate-progress-string timestamp expected-duration) ))
+                  (if in-queue
+                      (insert "    Waiting   ")
+                    (insert "              ")))
+                (insert name)
+                (insert "\n"))))
           jobs)
     (funcall callback)))
 
