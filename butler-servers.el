@@ -31,7 +31,7 @@
 ;;; Code:
 
 
-(defvar butler-hash (make-hash-table))
+(defvar butler-hash (make-hash-table :test #'equal))
 (defvar butler-server-list nil)
 
 (defun parse-authinfo-file (filename servername)
