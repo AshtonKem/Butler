@@ -98,23 +98,63 @@
 	 (jobs (cdr (assoc 'jobs parsed))))
     jobs))
 
-(defun find-trigger-url (line)
-  (let ((start (search "url: " line)))
-    (if start
-        (substring line (+ start 5)))))
 
-(defun find-trigger-auth ()
+(defun find-trigger-name ()
   (with-current-buffer (butler-buffer)
-    (save-excursion
-      (condition-case nil
-          (let* ((pos (search-backward "auth: "))
-                 (line-start (line-beginning-position))
-                 (line-end (line-end-position))
-                 (line (buffer-substring line-start line-end))
-                 (auth-start (search "auth: " line))
-                 (auth-string (substring line (+ auth-start 6))))
-            auth-string)
-          (search-failed nil)))))
+    (condition-case nil
+        (let* ((line-start (line-beginning-position))
+               (line-end (line-end-position))
+               (line (substring-no-properties (buffer-substring line-start line-end))))
+          (print line)
+          (if (string-match "^    ●\\(    Waiting   \\|              \\| |\\(\\+\\| \\)\\{10\\}| \\)\\(.*\\)$" line)
+              (match-string 3 line))))))
+
+(defun find-trigger-server (job-name)
+  (let ((matches nil)
+        (distances nil))
+    (maphash (lambda (name server)
+               (if (gethash job-name (gethash 'jobs server))
+                   (push name matches)))
+             butler-hash)
+    (if (= 1 (length matches))
+        (car matches)
+      (with-current-buffer (butler-buffer)
+        (setq distances
+              (mapcar (lambda (name)
+                        (let ((location (save-excursion
+                                          (search-backward-regexp
+                                           (concat "^" name) nil t))))
+                          (princ location)
+                          (if location
+                              (- (point) location)
+                            -1)))
+                      matches))
+        (princ matches)
+        (princ distances)
+        (let ((current-index 0)
+              (best-index nil)
+              (best-value nil))
+          (mapc (lambda (value)
+                  (if (> value 0)
+                      (princ "Positive"))
+                  (if (or (not best-value)
+                          (< value best-value))
+                      (princ "Difference"))
+                  (princ "Iter")
+                  (if (and (> value 0)
+                           (or (not best-value)
+                               (< value best-value)))
+                      (progn
+                        (princ "Set!")
+                        (setq best-index current-index)
+                        (setq best-value value)))
+                  (incf current-index))
+                distances)
+          (princ best-index)
+          (if (integerp best-index)
+              (nth best-index matches)))))))
+
+
 
 (defun trigger-butler-job ()
   (interactive)
