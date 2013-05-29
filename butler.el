@@ -133,33 +133,22 @@
                         (let ((location (save-excursion
                                           (search-backward-regexp
                                            (concat "^" name) nil t))))
-                          (princ location)
                           (if location
                               (- (point) location)
                             -1)))
                       matches))
-        (princ matches)
-        (princ distances)
         (let ((current-index 0)
               (best-index nil)
               (best-value nil))
           (mapc (lambda (value)
-                  (if (> value 0)
-                      (princ "Positive"))
-                  (if (or (not best-value)
-                          (< value best-value))
-                      (princ "Difference"))
-                  (princ "Iter")
                   (if (and (> value 0)
                            (or (not best-value)
                                (< value best-value)))
                       (progn
-                        (princ "Set!")
                         (setq best-index current-index)
                         (setq best-value value)))
                   (incf current-index))
                 distances)
-          (princ best-index)
           (if (integerp best-index)
               (nth best-index matches)))))))
 
