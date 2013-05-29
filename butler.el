@@ -33,6 +33,7 @@
 
 (require 'json)
 (require 'web)
+(require 'cl)
 (require 'butler-servers)
 
 
