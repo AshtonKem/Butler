@@ -53,7 +53,7 @@ In the future, the first variable will indicate what type of CI server is being 
 
 View the list of servers with `M-x butler-status`. Refresh the list with `g`, and trigger the job under the point with `t`.
 
-But I use SSO/LDAP and I Don't Want to Write My Password Down!
+But I use SSO and Passwords Don't Work!
 ==============================================================
 
 No worries. Jenkins provides an "API" token that can be used like a password, but only for Jenkins. To get your API token follow these steps:
