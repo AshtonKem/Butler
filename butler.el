@@ -65,6 +65,8 @@
                  (if (not (gethash 'jobs server))
                      (puthash 'jobs (make-hash-table :test #'equal) server))
                  (web-http-get (lambda (httpc _header data)
+                                 (princ data)
+                                 (princ headers)
                                  (let ((parsed (json-read-from-string data)))
                                    (mapc (lambda (job)
                                            (let* ((hash (or (gethash (cdr (assoc 'name job))
@@ -96,7 +98,9 @@
                                      (funcall callback))
                                  )
                                :url (concat
-                                     base-url
+                                     (if (string= "/" (substring base-url (- (length base-url) 1)))
+                                         (substring base-url 0 (- (length base-url) 1))
+                                       base-url)
                                      "/api/json?tree=jobs[name,inQueue,color,url,lastBuild[building,duration,estimatedDuration,timestamp,executor[likelyStuck]]]")
                                :extra-headers headers)))
              butler-hash)))
