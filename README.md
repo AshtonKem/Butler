@@ -54,7 +54,7 @@ In the future, the first variable will indicate what type of CI server is being 
 View the list of servers with `M-x butler-status`. Refresh the list with `g`, and trigger the job under the point with `t`.
 
 But I use SSO and Passwords Don't Work!
-==============================================================
+---------------------------------------
 
 No worries. Jenkins provides an "API" token that can be used like a password, but only for Jenkins. To get your API token follow these steps:
 
@@ -88,4 +88,4 @@ FAQ
     * I've only tested with Jenkins at the moment. Since Jenkins and Hudson are so closely related, theoretically it should be fine. Please contact me if Hudson doesn't work.
     * I currently do not support other server types, sorry.
 6. Do you support anything other than basic auth?
-    * No.
+    * Kind of. Jenkins provides single user API tokens that can be used as a password.
