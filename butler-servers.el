@@ -50,9 +50,10 @@
               (generate-basic-auth username password))))))
 
 (defun generate-basic-auth (username password)
-  (concat "Basic "
-          (base64-encode-string
-           (concat username ":" password))))
+  (replace-regexp-in-string "\n" ""
+                            (concat "Basic "
+                                    (base64-encode-string
+                                     (concat username ":" password)))))
 
 (defun prepare-servers ()
   (when (= 0 (hash-table-count butler-hash))
