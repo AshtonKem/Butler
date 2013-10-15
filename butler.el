@@ -271,6 +271,7 @@
                butler-hash))))
 
 
+;;;###autoload
 (defun butler-status ()
   (interactive)
   (butler-refresh)
