@@ -25,10 +25,10 @@ Butler contains a list of servers conveniently named butler-servers. Add servers
 
 ```elisp
 (add-to-list butler-servers
-             '((jenkins "SERVER-NAME"
-                        (server-address . "https://jenkins-addres")
-                        (server-user . "user")
-                        (server-password . "pass"))))
+             '(jenkins "SERVER-NAME"
+                       (server-address . "https://jenkins-addres")
+                       (server-user . "user")
+                       (server-password . "pass")))
 ```
 
 Butler also supports putting credentials in an encrypted authinfo file, like gnus.
@@ -37,9 +37,9 @@ Use the following code to set that up:
 
 ```elisp
 (add-to-list butler-servers
-             '((jenkins "SERVER-NAME"
-                        (server-address . "https://jenkins-addres")
-                        (auth-file . "~/.authinfo.gpg"))))
+             '(jenkins "SERVER-NAME"
+                       (server-address . "https://jenkins-addres")
+                       (auth-file . "~/.authinfo.gpg")))
 ```
 
 The following line should exist in ~/.authinfo.gpg:

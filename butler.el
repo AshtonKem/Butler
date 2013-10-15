@@ -30,10 +30,10 @@
 
 
 ;;; Code:
+(eval-when-compile (require 'cl))
 
 (require 'json)
 (require 'web)
-(require 'cl)
 (require 'butler-servers)
 
 
