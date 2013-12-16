@@ -7,7 +7,7 @@
 ;; URL: http://www.github.com/AshtonKem/Butler.git
 ;; Version: 0.1.3
 ;; Keywords: Jenkins, Hudson, CI
-;; Package-Requires: ((web "0.3.7") (json "1.2"))
+;; Package-Requires: ((deferred) (json "1.2"))
 
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -33,6 +33,8 @@
 (eval-when-compile (require 'cl))
 
 (require 'json)
+(require 'deferred)
+(require 'url)
 (require 'web)
 (require 'butler-servers)
 
@@ -166,11 +168,15 @@
            (server (get-server server-name))
            (job (get-job server job-name))
            (url (gethash 'url job))
-           (auth (gethash 'auth server)))
+           (auth (gethash 'auth server))
+           (url-request-extra-headers `(("Authorization" . ,auth))))
       (if (and url auth)
-          (web-http-get (lambda (_conn _headers _data))
-                         :url (concat url "build/")
-                        :extra-headers `(("Authorization" . ,auth))))      )))
+          (deferred:$
+            (deferred:url-retrieve (concat url "build/"))
+            (deferred:nextc it
+              (lambda (buf)
+                (kill-buffer buf))))))))
+
 
 (defun hide-butler-job ()
   (interactive)
