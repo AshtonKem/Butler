@@ -36,6 +36,7 @@
 (require 'deferred)
 (require 'url)
 (require 'butler-servers)
+(require 'butler-util)
 
 
 (defun butler-buffer ()
@@ -220,22 +221,7 @@
                    (hidden (gethash 'hidden job)))
               (unless hidden
                 (insert "    ")
-                (cond
-                 ((string= color  "red")
-                  (insert (propertize "●" 'face `(:foreground ,color))))
-                 ((string= color "yellow")
-                  (insert (propertize "●" 'face `(:foreground ,color))))
-                 ((string= color  "blue")
-                  (insert (propertize "●" 'face `(:foreground ,color))))
-                 ((string= color  "grey")
-                  (insert (propertize "●" 'face `(:foreground ,color))))
-                 ((string= color  "aborted")
-                  (insert (propertize "●" 'face `(:foreground "grey"))))
-                 ((string= color "disabled")
-                  (insert (propertize "●" 'face `(:foreground "black"))))
-                 ((string= (subseq color -6) "_anime")
-                  (insert (propertize "●" 'face `(:foreground ,(subseq color 0 -6)))))
-                 (t (insert (concat "Unknown: " "'" color "' "))))
+                (insert (colorize-dot color) )
                 (if building
                     (if likely-stuck
                         (insert (propertize (generate-progress-string timestamp expected-duration)
