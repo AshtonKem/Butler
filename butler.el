@@ -37,6 +37,7 @@
 (require 'url)
 (require 'butler-servers)
 (require 'butler-util)
+(require 'widget)
 
 
 (defun butler-buffer ()
@@ -53,6 +54,42 @@
 (define-derived-mode butler-mode fundamental-mode "Butler"
   "A major mode for interacting with various CI servers"
   (use-local-map butler-mode-map))
+
+(defun parse-job-parameters (job)
+  "Return a hash containing all the parameters for a job"
+  (let ((properties (cdr (assoc 'property job)))
+        (parameters-hash (make-hash-table :test #'equal)))
+    (when (> (length properties) 0)
+      (mapc
+       (lambda (property)
+         (let ((parameter-definitions (cdr (assoc 'parameterDefinitions property))))
+           (when parameter-definitions
+               (mapc
+                (lambda (parameter)
+                  (let* ((working-hash (make-hash-table :test #'equal))
+                         (description (cdr (assoc 'definition parameter)))
+                         (name (cdr (assoc 'name parameter)))
+                         (type (cdr (assoc 'type parameter)))
+                         (choices (cdr (assoc 'choices parameter)))
+                         (defaults (cdr (assoc 'defaultParameterValue parameter))))
+                    (puthash 'name name working-hash)
+                    (puthash 'description description working-hash)
+                    (cond
+                     ((equal type "ChoiceParameterDefinition")
+                      (progn
+                          (puthash 'default (cdr (assoc 'value defaults)) working-hash)
+                          (puthash 'choices choices working-hash)
+                          (puthash 'type 'choice working-hash)))
+                     ((equal type "StringParameterDefinition")
+                      (puthash 'type 'string working-hash))
+                     ((equal type "TextParameterDefinition")
+                      (puthash 'type 'text working-hash))
+                     ((equal type "BooleanParameterDefinition")
+                      (puthash 'type 'bool working-hash)))
+                    (puthash name working-hash parameters-hash)))
+                parameter-definitions))))
+       properties)
+      parameters-hash)))
 
 (defun refresh-butler-status (callback)
   (prepare-servers)
@@ -72,7 +109,7 @@
                                                      (if (string= "/" (substring base-url (- (length base-url) 1)))
                                                          (substring base-url 0 (- (length base-url) 1))
                                                        base-url)
-                                                     "/api/json?tree=jobs[name,inQueue,color,url,lastBuild[building,duration,estimatedDuration,timestamp,executor[likelyStuck]]]"))
+                                                     "/api/json?tree=jobs[name,inQueue,color,url,property[parameterDefinitions[defaultParameterValue[name,value],name,choices,type]],lastBuild[building,duration,estimatedDuration,timestamp,executor[likelyStuck]]]"))
                              (deferred:nextc it
                                (lambda (buf)
                                  (with-current-buffer buf
@@ -85,7 +122,10 @@
                                                                        (gethash 'jobs server))
                                                               (make-hash-table :test #'equal)))
                                                     (last-build (cdr (assoc 'lastBuild job)))
+                                                    (parameters (parse-job-parameters job))
                                                     (executor (cdr (assoc 'likelyStuck last-build))))
+                                               (puthash 'parameters parameters
+                                                        hash)
                                                (puthash 'color (cdr (assoc 'color job))
                                                         hash)
                                                (puthash 'name (cdr (assoc 'name job))
@@ -110,6 +150,8 @@
                                      (funcall callback))
                                  (kill-buffer buf))))))
              butler-hash)))
+
+
 
 
 (defun parse-jobs (data)
@@ -172,13 +214,49 @@
            (job (get-job server job-name))
            (url (gethash 'url job))
            (auth (gethash 'auth server))
+           (parameters (gethash 'parameters job))
            (url-request-extra-headers `(("Authorization" . ,auth))))
-      (if (and url auth)
-          (deferred:$
-            (deferred:url-retrieve (concat url "build/"))
-            (deferred:nextc it
-              (lambda (buf)
-                (kill-buffer buf))))))))
+      (when (and url auth)
+        (if (not parameters)
+            (deferred:$
+              (deferred:url-retrieve (concat url "build/"))
+              (deferred:nextc it
+                (lambda (buf)
+                  (kill-buffer buf))))
+          (progn
+            (select-window (minibuffer-window))
+             (kill-all-local-variables)
+             (make-local-variable 'widget-example-repeat)
+             (let ((inhibit-read-only t))
+               (erase-buffer))
+             (remove-overlays)
+             (widget-insert "Triggering a parameterized job")
+             (maphash (lambda (key parameter)
+                        (let ((type (gethash 'type parameter))
+                              (name (gethash 'name parameter))
+                              (default (gethash 'name parameter))
+                              (description (gethash 'description parameter)))
+                          (cond
+                           ((equal type 'choice)
+                            (widget-create 'radio-button-choice
+                                           :value "One"
+                                           '(item "One") '(item "Another One.")
+                                           '(item "A Final One."))
+
+)
+                           ((equal type 'string)
+                            (widget-create 'editable-field
+                                           :size 20
+                                           :format (or default "")
+                                           description))
+                           ))
+                        )
+                      parameters)
+
+
+             (use-local-map widget-keymap)
+             (widget-setup)
+            ))))))
 
 
 (defun hide-butler-job ()
