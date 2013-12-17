@@ -81,7 +81,7 @@
    ((string= color  "grey")
     (propertize "●" 'face 'butler-aborted))
    ((string= color  "aborted")
-    (ize "●" 'face 'butler-aborted))
+    (propertize "●" 'face 'butler-aborted))
    ((string= color "disabled")
     (propertize "●" 'face 'butler-disabled))
    ((string= (subseq color -6) "_anime")
