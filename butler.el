@@ -241,15 +241,12 @@
                             (widget-create 'radio-button-choice
                                            :value "One"
                                            '(item "One") '(item "Another One.")
-                                           '(item "A Final One."))
-
-)
+                                           '(item "A Final One.")))
                            ((equal type 'string)
                             (widget-create 'editable-field
                                            :size 20
-                                           :format (or default "")
-                                           description))
-                           ))
+                                           :format (concat name ": %v")
+                                           (or default "")))))
                         )
                       parameters)
 
