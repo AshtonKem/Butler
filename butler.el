@@ -226,37 +226,80 @@
               (deferred:nextc it
                 (lambda (buf)
                   (kill-buffer buf))))
-          (progn
+          (let ((old-window (selected-window))
+                (widgets (make-hash-table :test #'equal)))
             (select-window (minibuffer-window))
-             (kill-all-local-variables)
-             (make-local-variable 'widget-example-repeat)
-             (let ((inhibit-read-only t))
-               (erase-buffer))
-             (remove-overlays)
-             (widget-insert "Triggering a parameterized job")
-             (maphash (lambda (key parameter)
-                        (let ((type (gethash 'type parameter))
-                              (name (gethash 'name parameter))
-                              (default (gethash 'name parameter))
-                              (description (gethash 'description parameter)))
-                          (cond
-                           ((equal type 'choice)
-                            (widget-create 'radio-button-choice
-                                           :value "One"
-                                           '(item "One") '(item "Another One.")
-                                           '(item "A Final One.")))
-                           ((equal type 'string)
-                            (widget-create 'editable-field
-                                           :size 20
-                                           :format (concat name ": %v")
-                                           (or default "")))))
-                        )
-                      parameters)
-
-
-             (use-local-map widget-keymap)
-             (widget-setup)
-            ))))))
+            (kill-all-local-variables)
+            (make-local-variable 'widget-example-repeat)
+            (let ((inhibit-read-only t))
+              (erase-buffer))
+            (remove-overlays)
+            (widget-insert "Triggering a parameterized job\n")
+            (maphash (lambda (key parameter)
+                       (let ((type (gethash 'type parameter))
+                             (name (gethash 'name parameter))
+                             (default (gethash 'name parameter))
+                             (choices (gethash 'choices parameter))
+                             (description (gethash 'description parameter)))
+                         (widget-insert (concat name ": "))
+                         (puthash name (cond
+                                        ((equal type 'choice)
+                                         (progn
+                                           (widget-insert "\n")
+                                           (apply #'widget-create 'radio-button-choice
+                                                  :name name
+                                                  :value default
+                                                  (mapcar (lambda (choice)
+                                                            (list 'item choice))
+                                                          choices))))
+                                        ((equal type 'bool)
+                                         (widget-create 'toggle
+                                                        :name name))
+                                        ((equal type 'string)
+                                         (widget-create 'editable-field
+                                                        :name name
+                                                        (or default "")))
+                                        ((equal type 'text)
+                                         (widget-create 'text
+                                                        (or default ""))))
+                                  widgets)))
+                     parameters)
+            (widget-create 'push-button
+                           :notify (lambda (&rest ignore)
+                                     (print "hello")
+                                     (let ((url-parameters '()))
+                                       (maphash (lambda (name widget)
+                                                   (push
+                                                    (cond
+                                                     ((equal (widget-value widget) t)
+                                                      (concat name "=" "true"))
+                                                     ((equal (widget-value widget) nil)
+                                                      (concat name "=" "false"))
+                                                     (t
+                                                      (concat name "=" (url-hexify-string (widget-value widget)))))
+                                                   url-parameters))
+                                                widgets)
+                                       (print (concat "Contacting " url "buildWithParameters?"  (join-string url-parameters "&")))
+                                        (deferred:$
+                                          (deferred:url-retrieve (concat url "buildWithParameters?" (join-string url-parameters "&")))
+                                          (deferred:nextc it
+                                            (lambda (buf)
+                                              (kill-buffer buf))))
+                                        (select-window (minibuffer-window))
+                                        (let ((inhibit-read-only t))
+                                          (erase-buffer))
+                                        (select-window old-window)))
+                           "Submit")
+            (widget-insert " ")
+            (widget-create 'push-button
+                           :notify (lambda (&rest ignore)
+                                     (select-window (minibuffer-window))
+                                     (let ((inhibit-read-only t))
+                                       (erase-buffer))
+                                     )
+                           "Cancel")
+            (use-local-map widget-keymap)
+            (widget-setup)))))))
 
 
 (defun hide-butler-job ()
@@ -289,28 +332,28 @@
 (defun draw-jobs (jobs target-buffer callback)
   (with-current-buffer target-buffer
     (maphash (lambda (name job)
-            (let* ((inhibit-read-only t)
-                   (color (gethash 'color job))
-                   (building (gethash 'building job nil))
-                   (likely-stuck (gethash 'likely-stuck job nil))
-                   (in-queue (gethash 'in-queue job nil))
-                   (timestamp (gethash 'timestamp job))
-                   (expected-duration (gethash 'expected-duration job))
-                   (hidden (gethash 'hidden job)))
-              (unless hidden
-                (insert "    ")
-                (insert (colorize-dot color) )
-                (if building
-                    (if likely-stuck
-                        (insert (propertize (generate-progress-string timestamp expected-duration)
-                                            'face '(:foreground "res")))
-                      (insert (generate-progress-string timestamp expected-duration) ))
-                  (if in-queue
-                      (insert "    Waiting   ")
-                    (insert "              ")))
-                (insert name)
-                (insert "\n"))))
-          jobs)
+               (let* ((inhibit-read-only t)
+                      (color (gethash 'color job))
+                      (building (gethash 'building job nil))
+                      (likely-stuck (gethash 'likely-stuck job nil))
+                      (in-queue (gethash 'in-queue job nil))
+                      (timestamp (gethash 'timestamp job))
+                      (expected-duration (gethash 'expected-duration job))
+                      (hidden (gethash 'hidden job)))
+                 (unless hidden
+                   (insert "    ")
+                   (insert (colorize-dot color) )
+                   (if building
+                       (if likely-stuck
+                           (insert (propertize (generate-progress-string timestamp expected-duration)
+                                               'face '(:foreground "res")))
+                         (insert (generate-progress-string timestamp expected-duration) ))
+                     (if in-queue
+                         (insert "    Waiting   ")
+                       (insert "              ")))
+                   (insert name)
+                   (insert "\n"))))
+             jobs)
     (funcall callback)))
 
 
