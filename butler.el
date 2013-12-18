@@ -85,7 +85,10 @@
                      ((equal type "TextParameterDefinition")
                       (puthash 'type 'text working-hash))
                      ((equal type "BooleanParameterDefinition")
-                      (puthash 'type 'bool working-hash)))
+                      (progn
+                        (puthash 'type 'bool working-hash)
+                        (unless (equal (cdr (assoc 'value defaults)) :json-false)
+                            (puthash 'default t working-hash)))))
                     (puthash name working-hash parameters-hash)))
                 parameter-definitions))))
        properties)
