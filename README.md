@@ -15,7 +15,7 @@ Dependencies
 
 * json.el
     * Should be distributed with Emacs.
-* web.el
+* deferred.el
     * Available in Marmalade.
 
 Getting Started
@@ -64,10 +64,17 @@ No worries. Jenkins provides an "API" token that can be used like a password, bu
 * Select "Show API Token"
 * Copy token into .authinfo.gpg, or into your config files
 
+
+Release Notes
+=============
+
+* 0.2.0
+   * Customizable faces for the status dots.
+   * Replaced web.el with deffered.el for better performance
+
 Coming Soon
 ===========
 
-* Indication of what jobs are running
 * Console output.
 * Job history.
 * Job watching.
