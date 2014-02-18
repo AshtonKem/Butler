@@ -38,21 +38,75 @@
 (require 'butler-servers)
 (require 'butler-util)
 
+(defcustom butler-auto-refresh t
+  "Set to non-nil to auto-refresh the buffer.  When this is non-nil, the butler status buffer is refreshed at regular intervals specified by `butler-auto-refresh-interval'.  The buffer is never refreshed when it is in the background."
+  :type 'boolean
+  :group 'butler
+  :set (lambda (symbol value) 
+         (set-default symbol value)
+         (when (functionp 'butler-manage-refresh-timer)
+           (butler-manage-refresh-timer))))
+
+(defcustom butler-auto-refresh-interval 5
+  "Specifies the number of seconds to wait between refreshing the butler status buffer.  Setting this to any number less than 1 will be treated as a 1 second interval.  Auto-refresh can be turned on or off with the `butler-auto-refresh' variable.  Refresh can be toggled by pressing 'a' in the butler status buffer."
+  :type 'integer
+  :group 'butler
+  :set (lambda (symbol value) 
+         (set-default symbol value)
+         (when (functionp 'butler-manage-refresh-timer)
+           (butler-manage-refresh-timer))))
+
+(defun butler-buffer-name ()
+  "*butler-status*")
 
 (defun butler-buffer ()
-  (get-buffer-create "*butler-status*"))
+  (get-buffer-create (butler-buffer-name)))
 
 (defvar butler-mode-map
   (let ((map (make-keymap)))
+    (define-key map (kbd "a") 'butler-toggle-auto-refresh)
     (define-key map (kbd "g") 'butler-refresh)
     (define-key map (kbd "t") 'trigger-butler-job)
     (define-key map (kbd "h") 'hide-butler-job)
+    (define-key map (kbd "q") 'butler-quit)
     map))
 
 
 (define-derived-mode butler-mode fundamental-mode "Butler"
   "A major mode for interacting with various CI servers"
-  (use-local-map butler-mode-map))
+  (use-local-map butler-mode-map)
+  (butler-manage-refresh-timer))
+
+(defun butler-toggle-auto-refresh ()
+  "Toggles whether the butler status buffer refreshes automatically.  This is driven by the `butler-auto-refresh' and `butler-auto-refresh-interval' variables, which can be customized with M-x customize-group RET butler RET"
+  (interactive)
+  (setq butler-auto-refresh (not butler-auto-refresh))
+  (message (concat "Auto-refresh " (if butler-auto-refresh "enabled." "disabled.")))
+  (butler-manage-refresh-timer))
+
+(defun butler-manage-refresh-timer ()
+  (cancel-function-timers 'butler-timer-refresh)
+  (when (and butler-auto-refresh
+             (get-buffer (butler-buffer-name)))
+    (butler-start-refresh-timer)))
+
+(defun butler-start-refresh-timer ()
+  (run-with-timer (max butler-auto-refresh-interval 1)
+                  (max butler-auto-refresh-interval 1)
+                  'butler-timer-refresh))
+
+(defun butler-timer-refresh ()
+  (with-local-quit
+    (let ((buffer (get-buffer (butler-buffer-name))))
+      (if buffer
+          (when (get-buffer-window buffer) ; only refresh if visible
+            (butler-refresh))
+        (cancel-function-timers 'butler-timer-refresh))))) ; cancel timer when buffer no longer exists
+
+(defun butler-quit ()
+  "Kills the butler status buffer"
+  (interactive)
+  (kill-buffer (butler-buffer) ))
 
 (defun refresh-butler-status (callback)
   (prepare-servers)
@@ -164,6 +218,7 @@
 
 
 (defun trigger-butler-job ()
+  "Starts the job identified by the cursor position"
   (interactive)
   (with-current-buffer (butler-buffer)
     (let* ((job-name (find-current-job))
@@ -182,6 +237,7 @@
 
 
 (defun hide-butler-job ()
+  "Hides the job identified by the cursor position"
   (interactive)
   (with-current-buffer (butler-buffer)
     (let* ((job-name (find-current-job))
@@ -267,12 +323,14 @@
 
 ;;;###autoload
 (defun butler-status ()
+  "Shows the butler status buffer which displays the status of the configured CI server"
   (interactive)
   (butler-refresh)
   (switch-to-buffer (butler-buffer))
   (butler-mode))
 
 (defun butler-refresh ()
+  "Refreshes the contents of the butler status buffer from the server"
   (interactive)
   (refresh-butler-status
    (lambda ()
