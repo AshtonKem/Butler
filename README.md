@@ -18,6 +18,13 @@ Dependencies
 * deferred.el
     * Available in Marmalade.
 
+Thanks
+------
+Even the smallest open source project is a team effort. The following people have helped Butler along:
+
+* killdash9
+    * For creating the configurable auto-refresh system
+
 Getting Started
 ===============
 
@@ -68,6 +75,8 @@ No worries. Jenkins provides an "API" token that can be used like a password, bu
 Release Notes
 =============
 
+* 0.2.1
+   * Configurable auto refresh
 * 0.2.0
    * Customizable faces for the status dots.
    * Replaced web.el with deffered.el for better performance
