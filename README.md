@@ -31,9 +31,9 @@ Getting Started
 Butler contains a list of servers conveniently named butler-servers. Add servers in the following manner:
 
 ```elisp
-(add-to-list butler-servers
+(add-to-list 'butler-server-list
              '(jenkins "SERVER-NAME"
-                       (server-address . "https://jenkins-addres")
+                       (server-address . "https://jenkins-address")
                        (server-user . "user")
                        (server-password . "pass")))
 ```
