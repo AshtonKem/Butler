@@ -130,7 +130,7 @@
                              (deferred:nextc it
                                (lambda (buf)
                                  (with-current-buffer buf
-                                   (beginning-of-buffer)
+                                   (goto-char (point-min))
                                    (search-forward "{")
                                    (let* ((data (buffer-substring (- (point) 1) (point-max)))
                                           (parsed (json-read-from-string data)))
