@@ -130,7 +130,7 @@
                              (deferred:nextc it
                                (lambda (buf)
                                  (with-current-buffer buf
-                                   (beginning-of-buffer)
+                                   (goto-char (point-min))
                                    (search-forward "{")
                                    (let* ((data (buffer-substring (- (point) 1) (point-max)))
                                           (parsed (json-read-from-string data)))
@@ -308,7 +308,7 @@
                         (auth (gethash 'auth server))
                         (jobs (gethash 'jobs server)))
                    (goto-char (point-max))
-                   (insert (concat name " (" (org-link-unescape address) "): "))
+                   (insert (concat name " (" (url-unhex-string address) "): "))
                    (insert (propertize (concat "auth: "
                                                auth)
                                        'invisible t))
