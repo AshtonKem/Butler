@@ -5,9 +5,6 @@
 ;;
 ;; Author: Ashton Kemerling <ashtonkemerling@gmail.com>
 ;; URL: http://www.github.com/AshtonKem/Butler.git
-;; Version: 0.2.2
-;; Keywords: Jenkins, Hudson, CI
-;; Package-Requires: ((deferred "3.1") (json "1.2"))
 
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
