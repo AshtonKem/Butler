@@ -41,7 +41,7 @@ Butler also supports putting credentials in an encrypted authinfo file, like gnu
 Use the following code to set that up:
 
 ```elisp
-(add-to-list butler-servers
+(add-to-list 'butler-server-list
              '(jenkins "SERVER-NAME"
                        (server-address . "https://jenkins-addres")
                        (auth-file . "~/.authinfo.gpg")))
