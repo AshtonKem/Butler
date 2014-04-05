@@ -7,7 +7,7 @@
 ;; URL: http://www.github.com/AshtonKem/Butler.git
 ;; Version: 0.2.0
 ;; Keywords: Jenkins, Hudson, CI
-;; Package-Requires: ((deferred) (json "1.2"))
+;; Package-Requires: ((deferred) (json "1.2") (emacs "24"))
 
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@
   "Set to non-nil to auto-refresh the buffer.  When this is non-nil, the butler status buffer is refreshed at regular intervals specified by `butler-auto-refresh-interval'.  The buffer is never refreshed when it is in the background."
   :type 'boolean
   :group 'butler
-  :set (lambda (symbol value) 
+  :set (lambda (symbol value)
          (set-default symbol value)
          (when (functionp 'butler-manage-refresh-timer)
            (butler-manage-refresh-timer))))
@@ -51,7 +51,7 @@
   "Specifies the number of seconds to wait between refreshing the butler status buffer.  Setting this to any number less than 1 will be treated as a 1 second interval.  Auto-refresh can be turned on or off with the `butler-auto-refresh' variable.  Refresh can be toggled by pressing 'a' in the butler status buffer."
   :type 'integer
   :group 'butler
-  :set (lambda (symbol value) 
+  :set (lambda (symbol value)
          (set-default symbol value)
          (when (functionp 'butler-manage-refresh-timer)
            (butler-manage-refresh-timer))))
