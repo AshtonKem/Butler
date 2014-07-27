@@ -39,7 +39,10 @@
 (require 'butler-util)
 
 (defcustom butler-auto-refresh t
-  "Set to non-nil to auto-refresh the buffer.  When this is non-nil, the butler status buffer is refreshed at regular intervals specified by `butler-auto-refresh-interval'.  The buffer is never refreshed when it is in the background."
+  "Set to non-nil to auto-refresh the buffer.  When this is
+non-nil, the butler status buffer is refreshed at regular
+intervals specified by `butler-auto-refresh-interval'.  The
+buffer is never refreshed when it is in the background."
   :type 'boolean
   :group 'butler
   :set (lambda (symbol value)
@@ -48,7 +51,12 @@
            (butler-manage-refresh-timer))))
 
 (defcustom butler-auto-refresh-interval 5
-  "Specifies the number of seconds to wait between refreshing the butler status buffer.  Setting this to any number less than 1 will be treated as a 1 second interval.  Auto-refresh can be turned on or off with the `butler-auto-refresh' variable.  Refresh can be toggled by pressing 'a' in the butler status buffer."
+  "Specifies the number of seconds to wait between refreshing the
+butler status buffer.  Setting this to any number less than 1
+will be treated as a 1 second interval.  Auto-refresh can be
+turned on or off with the `butler-auto-refresh' variable.
+Refresh can be toggled by pressing 'a' in the butler status
+buffer."
   :type 'integer
   :group 'butler
   :set (lambda (symbol value)
@@ -89,11 +97,14 @@
   map))
 
 (defun butler-toggle-auto-refresh ()
-  "Toggles whether the butler status buffer refreshes automatically.  This is driven by the `butler-auto-refresh' and `butler-auto-refresh-interval' variables, which can be customized with M-x customize-group RET butler RET"
+  "Toggles whether the butler status buffer refreshes
+automatically.  This is driven by the `butler-auto-refresh' and
+`butler-auto-refresh-interval' variables, which can be customized
+with M-x customize-group RET butler RET"
   (interactive)
   (setq butler-auto-refresh (not butler-auto-refresh))
   (message (concat "Auto-refresh " (if butler-auto-refresh "enabled." "disabled.")))
-  (butler-manage-refresh-timer))
+  (butler-manage-refresh-timer))-
 
 (defun butler-manage-refresh-timer ()
   (cancel-function-timers 'butler-timer-refresh)
