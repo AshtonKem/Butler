@@ -85,6 +85,8 @@
     (colorize-dot (subseq color 0 -6)))
    (t (concat "Unknown: " "'" color "' "))))
 
+(defun build-auth-headers (auth)
+  `(("Authorization" . ,auth)))
 
 ;;; Code:
 (provide 'butler-util)

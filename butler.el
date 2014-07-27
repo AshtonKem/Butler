@@ -226,7 +226,7 @@
            (job (get-job server job-name))
            (url (gethash 'url job))
            (auth (gethash 'auth server))
-           (url-request-extra-headers `(("Authorization" . ,auth))))
+           (url-request-extra-headers (build-auth-headers auth)))
       (if (and url auth)
           (deferred:$
             (deferred:url-retrieve (concat url "build/"))
