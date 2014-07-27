@@ -167,7 +167,7 @@
 
 (defun parse-jobs (data)
   (let* ((parsed (json-read-from-string data))
-	 (jobs (cdr (assoc 'jobs parsed))))
+         (jobs (cdr (assoc 'jobs parsed))))
     jobs))
 
 
