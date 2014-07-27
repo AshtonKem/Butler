@@ -71,7 +71,6 @@
     (define-key map (kbd "q") 'butler-quit)
     map))
 
-
 (define-derived-mode butler-mode fundamental-mode "Butler"
   "A major mode for interacting with various CI servers"
   (use-local-map butler-mode-map)
@@ -290,11 +289,6 @@
                 (insert "\n"))))
           jobs)
     (funcall callback)))
-
-
-
-
-
 
 (defun draw-butler (buffer callback)
   (with-current-buffer buffer
