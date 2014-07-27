@@ -83,6 +83,10 @@
 (defun get-job (server name)
   (gethash name (gethash 'jobs server)))
 
+(defun get-url (name &optional server)
+  (if server
+      (get-in butler-hash (list server 'jobs name 'url))
+    (get-in butler-hash (list (find-current-server name) 'jobs name 'url))))
 
 (provide 'butler-servers)
 

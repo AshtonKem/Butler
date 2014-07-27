@@ -62,6 +62,12 @@
 (defun butler-buffer ()
   (get-buffer-create (butler-buffer-name)))
 
+;; TODO: This is a hack. Each server should just store its
+;; authentication headers since they don't change much -- we can
+;; recreate them whenever the password data is touched or something.
+(defvar butler-auth nil
+  "Variable for holding the current authentication.")
+
 (defvar butler-mode-map
   (let ((map (make-keymap)))
     (define-key map (kbd "a") 'butler-toggle-auto-refresh)
@@ -69,12 +75,18 @@
     (define-key map (kbd "t") 'trigger-butler-job)
     (define-key map (kbd "h") 'hide-butler-job)
     (define-key map (kbd "q") 'butler-quit)
+    (define-key map (kbd "i") 'get-job-status)
     map))
 
 (define-derived-mode butler-mode fundamental-mode "Butler"
   "A major mode for interacting with various CI servers"
   (use-local-map butler-mode-map)
   (butler-manage-refresh-timer))
+
+(defvar butler-info-mode-map
+  (let ((map (make-keymap)))
+    (define-key map (kbd "q") 'butler-quit-info-pane)
+  map))
 
 (defun butler-toggle-auto-refresh ()
   "Toggles whether the butler status buffer refreshes automatically.  This is driven by the `butler-auto-refresh' and `butler-auto-refresh-interval' variables, which can be customized with M-x customize-group RET butler RET"
@@ -106,6 +118,10 @@
   "Kills the butler status buffer"
   (interactive)
   (kill-buffer (butler-buffer) ))
+
+(defun butler-quit-info-pane ()
+  (interactive)
+  (kill-buffer))
 
 (defun refresh-butler-status (callback)
   (prepare-servers)
@@ -314,6 +330,58 @@
                    (incf count)))
                butler-hash))))
 
+(defun status-for-url (url)
+  (let ((url-request-extra-headers (build-auth-headers butler-auth))
+        (url (format "%sapi/json" url)))
+    (cdr
+     (assoc 'result
+            (json-read-from-string
+             (with-current-buffer
+                 (strip-headers (url-retrieve-synchronously url))
+               (buffer-string)))))))
+
+(defun display-recent-builds (builds)
+  (apply
+   #'concat
+   (mapcar (lambda (build)
+             (format "%s: %d\n\t"
+                     (colorize-status (status-for-url (cdr (assoc 'url build))))
+                     (cdr (assoc 'number build))))
+           builds)))
+
+(defun extract-job-info (info)
+  (concat
+   (format "Job: %s\n" (cdr (assoc 'displayName info)))
+   (format "Status: %s\n" (colorize-dot (cdr (assoc 'color info))))
+   (format "Recent builds:\n\t%s" (display-recent-builds
+                                   (cdr (assoc 'builds info))))))
+
+(defun draw-job-status (buffer info)
+  (with-current-buffer buffer
+    (insert (extract-job-info info)))
+  (switch-to-buffer buffer)
+  (read-only-mode)
+  (use-local-map butler-info-mode-map))
+
+(defun get-job-status ()
+  (interactive)
+  (let* ((job-name "payments") ;; TODO: Get the data from the current line
+         ;; TODO: Refactor this shit to use some kind of struct or CLOS object
+         (job-url  (get-url job-name))
+         (full-url (format "%sapi/json" job-url))
+         (server-name (find-current-server job-name))
+         (server (get-server server-name))
+         (job (get-job server job-name))
+         (url (gethash 'url job))
+         (butler-auth (gethash 'auth server)) ;; Uses the temporary hack from above
+         (url-request-extra-headers  (build-auth-headers butler-auth))
+         (info-buffer (generate-new-buffer (format "butler-info-%s" job-name))))
+    (when (and full-url butler-auth)
+      (draw-job-status info-buffer
+                       (json-read-from-string
+                        (with-current-buffer
+                            (strip-headers (url-retrieve-synchronously full-url))
+                          (buffer-string)))))))
 
 ;;;###autoload
 (defun butler-status ()
