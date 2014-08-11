@@ -4,7 +4,7 @@ Butler -- Emacs Integration for Jenkins (And maybe Hudson)
 Install
 =======
 
-Butler is available on [Marmalade](http://marmalade-repo.org/) and [MELPA](http://melpa.milkbox.net/#/butler). Because uploads to Marmalade are currently broken, I recommend using the MELPA version as it will be newer.
+Butler is available on [MELPA](http://melpa.milkbox.net/#/butler) [MELPA-STABLE](http://melpa.milkbox.net/#/butler). Because of persistent Marmalade problems, I'm currently recommending either of the Melpa versions.
 
 You will need to add `(require 'butler)`  to one of your init files.
 
