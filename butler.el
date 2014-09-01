@@ -230,7 +230,7 @@
            (url-request-extra-headers `(("Authorization" . ,auth))))
       (if (and url auth)
           (deferred:$
-            (deferred:url-retrieve (concat url "build/"))
+            (deferred:url-post (concat url "build/"))
             (deferred:nextc it
               (lambda (buf)
                 (kill-buffer buf))))))))
