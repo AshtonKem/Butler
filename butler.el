@@ -62,11 +62,23 @@
 (defun butler-buffer ()
   (get-buffer-create (butler-buffer-name)))
 
+(defun open-butler-job ()
+  (interactive)
+  (with-current-buffer (butler-buffer)
+    (let* ((job-name (find-current-job))
+	   (server-name (find-current-server job-name))
+	   (server (get-server server-name))
+	   (job (get-job server job-name))
+	   (url (gethash 'url job)))
+      (if (not (equal url ""))
+	  (browse-url url)))))
+
 (defvar butler-mode-map
   (let ((map (make-keymap)))
     (define-key map (kbd "a") 'butler-toggle-auto-refresh)
     (define-key map (kbd "g") 'butler-refresh)
     (define-key map (kbd "t") 'trigger-butler-job)
+    (define-key map (kbd "RET") 'open-butler-job)
     (define-key map (kbd "h") 'hide-butler-job)
     (define-key map (kbd "q") 'butler-quit)
     map))
