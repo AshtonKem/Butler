@@ -85,6 +85,28 @@
     (colorize-dot (subseq color 0 -6)))
    (t (concat "Unknown: " "'" color "' "))))
 
+(defun colorize-status (status)
+  (cond
+   ((string= status "ABORTED")
+    (propertize "●" 'face 'butler-aborted))
+   ((string= status "FAILURE")
+    (propertize "●" 'face 'butler-failure))
+   ((string= status "SUCCESS")
+    (propertize "●" 'face 'butler-success))))
+
+(defun get-in (hash keys)
+  (reduce
+   (lambda (a b) (gethash b a))
+   keys :initial-value hash))
+
+(defun build-auth-headers (auth)
+  `(("Authorization" . ,auth)))
+
+(defun strip-headers (http-buf)
+  (with-current-buffer http-buf
+    (search-forward "\n\n")
+    (delete-region (point-min) (point))
+    http-buf))
 
 ;;; Code:
 (provide 'butler-util)
