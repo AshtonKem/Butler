@@ -126,7 +126,7 @@
                                                      (if (string= "/" (substring base-url (- (length base-url) 1)))
                                                          (substring base-url 0 (- (length base-url) 1))
                                                        base-url)
-                                                     "/api/json?tree=jobs[name,inQueue,color,url,lastBuild[building,duration,estimatedDuration,timestamp,executor[likelyStuck]]]"))
+                                                     "/api/json?tree=jobs[name,inQueue,color,fullName,url,lastBuild[building,duration,estimatedDuration,timestamp,executor[likelyStuck]]]"))
                              (deferred:nextc it
                                (lambda (buf)
                                  (with-current-buffer buf
