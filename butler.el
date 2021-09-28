@@ -238,7 +238,7 @@ This must be unique because it is used for the key in a hash-map."
            (url-request-extra-headers `(("Authorization" . ,auth))))
       (if (and url auth)
           (deferred:$
-            (deferred:url-retrieve (concat url "build/"))
+            (deferred:url-post (concat url "build/"))
             (deferred:nextc it
               (lambda (buf)
                 (kill-buffer buf))))))))
