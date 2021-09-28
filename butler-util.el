@@ -67,6 +67,14 @@
   "Face for disabled Butler jobs."
   :group 'butler)
 
+(defface butler-notbuilt
+  '((((class color) (background light))
+     :foreground "gray")
+    (((class color) (background dark))
+     :foreground "gray"))
+  "Face for unbuilt Butler jobs."
+  :group 'butler)
+
 (defun colorize-dot (color)
   (cond
    ((string= color  "red")
@@ -81,6 +89,8 @@
     (propertize "●" 'face 'butler-aborted))
    ((string= color "disabled")
     (propertize "●" 'face 'butler-disabled))
+   ((string= color "notbuilt")
+    (propertize "●" 'face 'butler-notbuilt))
    ((string= (subseq color -6) "_anime")
     (colorize-dot (subseq color 0 -6)))
    (t (concat "Unknown: " "'" color "' "))))
