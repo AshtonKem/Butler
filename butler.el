@@ -56,6 +56,14 @@
          (when (functionp 'butler-manage-refresh-timer)
            (butler-manage-refresh-timer))))
 
+(defcustom butler-job-identifier 'name
+  "Specifies the field to use for identifying a job.
+
+This must be unique because it is used for the key in a hash-map."
+  :type 'symbol
+  :options '(url name fullName)
+  :group 'butler)
+
 (defun butler-buffer-name ()
   "*butler-status*")
 
@@ -126,7 +134,7 @@
                                                      (if (string= "/" (substring base-url (- (length base-url) 1)))
                                                          (substring base-url 0 (- (length base-url) 1))
                                                        base-url)
-                                                     "/api/json?tree=jobs[name,inQueue,color,url,lastBuild[building,duration,estimatedDuration,timestamp,executor[likelyStuck]]]"))
+                                                     "/api/json?tree=jobs[name,inQueue,color,fullName,url,lastBuild[building,duration,estimatedDuration,timestamp,executor[likelyStuck]]]"))
                              (deferred:nextc it
                                (lambda (buf)
                                  (with-current-buffer buf
@@ -135,7 +143,7 @@
                                    (let* ((data (buffer-substring (- (point) 1) (point-max)))
                                           (parsed (json-read-from-string data)))
                                      (mapc (lambda (job)
-                                             (let* ((hash (or (gethash (cdr (assoc 'name job))
+                                             (let* ((hash (or (gethash (cdr (assoc butler-job-identifier job))
                                                                        (gethash 'jobs server))
                                                               (make-hash-table :test #'equal)))
                                                     (last-build (cdr (assoc 'lastBuild job)))
@@ -156,7 +164,7 @@
                                                         hash)
                                                (puthash 'expected-duration (cdr (assoc 'estimatedDuration last-build))
                                                         hash)
-                                               (puthash (cdr (assoc 'name job))
+                                               (puthash (cdr (assoc butler-job-identifier job))
                                                         hash
                                                         (gethash 'jobs server))))
                                            (cdr (assoc 'jobs parsed)))))
